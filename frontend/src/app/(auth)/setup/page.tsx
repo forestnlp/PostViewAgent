@@ -220,10 +220,10 @@ export default function SetupPage() {
         />
         <div className="border-border/20 bg-background/5 w-full max-w-md space-y-6 rounded-3xl border p-8 backdrop-blur-sm">
           <div className="text-center">
-            <h1 className="font-serif text-3xl">DeerFlow</h1>
-            <p className="text-muted-foreground mt-2">Create admin account</p>
+            <h1 className="font-serif text-3xl">邮览官</h1>
+            <p className="text-muted-foreground mt-2">创建管理员账号</p>
             <p className="text-muted-foreground mt-1 text-xs">
-              Set up the administrator account to get started.
+              设置管理员账号以开始使用。
             </p>
           </div>
           <form onSubmit={handleInitAdmin} className="space-y-2">
@@ -295,12 +295,12 @@ export default function SetupPage() {
       />
       <div className="border-border/20 bg-background/5 w-full max-w-md space-y-6 rounded-3xl border p-8 backdrop-blur-sm">
         <div className="text-center">
-          <h1 className="font-serif text-3xl">DeerFlow</h1>
+          <h1 className="font-serif text-3xl">邮览官</h1>
           <p className="text-muted-foreground mt-2">
-            Complete admin account setup
+            完成管理员账号设置
           </p>
           <p className="text-muted-foreground mt-1 text-xs">
-            Set your real email and a new password.
+            设置您的真实邮箱和新密码。
           </p>
         </div>
         <form onSubmit={handleChangePassword} className="space-y-4">
