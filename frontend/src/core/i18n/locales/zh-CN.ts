@@ -686,7 +686,7 @@ export const zhCN: Translations = {
   // Settings
   settings: {
     title: "设置",
-    description: "根据你的偏好调整 DeerFlow 的界面和行为。",
+    description: "根据你的偏好调整邮览官的界面和行为。",
     sections: {
       account: "账号",
       appearance: "外观",
