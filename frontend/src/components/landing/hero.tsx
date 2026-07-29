@@ -68,9 +68,9 @@ export function Hero({ className }: { className?: string }) {
         flickerChance={0.4}
       />
       
-      {/* 邮政信封遮罩层 - 绿色渐变 */}
+      {/* 邮政信封遮罩层 - 绿色渐变 (降低层级，只作为视觉装饰) */}
       <div 
-        className="absolute inset-0 z-20 mask-[url(/images/post.svg)] mask-size-[100vw_100vh] mask-center mask-no-repeat"
+        className="absolute inset-0 z-5 mask-[url(/images/post.svg)] mask-size-[100vw_100vh] mask-center mask-no-repeat pointer-events-none"
         style={{
           background: 'radial-gradient(ellipse at center, rgba(11,148,68,0.25) 0%, rgba(11,148,68,0.15) 40%, rgba(11,148,68,0) 70%)'
         }}
