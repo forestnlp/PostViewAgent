@@ -6,9 +6,7 @@ import { APP_VERSION } from "@/version";
 
 export const aboutMarkdown = `# 📮 [关于邮览官 ${APP_VERSION}](https://github.com/forestnlp/PostViewAgent)
 
-> **基于 DeerFlow 2.0 构建的邮政经营分析智能体**
-
-邮览官（**Y**ou **L**an **G**uan - **P**ost **V**iew **A**gent）是一个基于 DeerFlow 2.0 构建的邮政经营分析智能体，专注于寄递业务数据分析、服务质量诊断和业务趋势预测。
+邮览官是一个专注于邮政经营分析的智能体，专注于寄递业务数据分析、服务质量诊断和业务趋势预测。
 
 ---
 
