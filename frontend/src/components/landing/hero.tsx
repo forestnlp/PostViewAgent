@@ -8,7 +8,6 @@ import { useEffect, useState } from "react";
 import { AuroraText } from "@/components/ui/aurora-text";
 import { Button } from "@/components/ui/button";
 import { FlickeringGrid } from "@/components/ui/flickering-grid";
-import Galaxy from "@/components/ui/galaxy";
 import { env } from "@/env";
 import { cn } from "@/lib/utils";
 
@@ -35,23 +34,39 @@ export function Hero({ className }: { className?: string }) {
         className,
       )}
     >
-      <div className="absolute inset-0 z-0 bg-black/40">
-        <Galaxy
-          mouseRepulsion={false}
-          starSpeed={0.2}
-          density={0.6}
-          glowIntensity={0.35}
-          twinkleIntensity={0.3}
-          speed={0.5}
-        />
+      {/* 邮政绿色渐变背景 */}
+      <div className="absolute inset-0 z-0 bg-gradient-to-br from-[#004d2a] via-[#006633] to-[#008c45]">
+        {/* 邮政数据流网格 */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="h-full w-full" style={{
+            backgroundImage: `
+              linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
+              linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)
+            `,
+            backgroundSize: '50px 50px'
+          }} />
+        </div>
+        {/* 光晕效果 */}
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#00a859] rounded-full blur-[128px] opacity-20" />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[#00cc6a] rounded-full blur-[128px] opacity-20" />
       </div>
+      
+      {/* 邮政风格闪烁网格 */}
       <FlickeringGrid
-        className="absolute inset-0 z-0 mask-[url(/images/post.svg)] mask-size-[100vw] mask-center mask-no-repeat md:mask-size-[72vh]"
-        squareSize={4}
-        gridGap={4}
-        color={"white"}
-        maxOpacity={0.3}
-        flickerChance={0.25}
+        className="absolute inset-0 z-10"
+        squareSize={3}
+        gridGap={6}
+        color="#00ff88"
+        maxOpacity={0.4}
+        flickerChance={0.3}
+      />
+      
+      {/* 邮政信封遮罩层 */}
+      <div 
+        className="absolute inset-0 z-5 mask-[url(/images/post.svg)] mask-size-[100vw_100vh] mask-center mask-no-repeat"
+        style={{
+          background: 'radial-gradient(ellipse at center, rgba(0,255,136,0.15) 0%, rgba(0,102,51,0) 70%)'
+        }}
       />
       <div className="container-md relative z-10 mx-auto flex min-h-[92svh] flex-col items-center justify-center px-4 pt-20 pb-14">
         <h1 className="text-center text-5xl leading-tight font-bold break-words md:text-6xl">
