@@ -34,38 +34,45 @@ export function Hero({ className }: { className?: string }) {
         className,
       )}
     >
-      {/* 邮政绿色渐变背景 */}
-      <div className="absolute inset-0 z-0 bg-gradient-to-br from-[#004d2a] via-[#006633] to-[#008c45]">
-        {/* 邮政数据流网格 */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="h-full w-full" style={{
-            backgroundImage: `
-              linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)
-            `,
-            backgroundSize: '50px 50px'
-          }} />
+      {/* 黑色背景 */}
+      <div className="absolute inset-0 z-0 bg-black">
+        {/* 邮政绿色渐变光晕 */}
+        <div className="absolute top-0 left-0 w-full h-full">
+          <div className="absolute top-1/4 left-1/4 w-[600px] h-[600px] bg-[#0B9444] rounded-full blur-[180px] opacity-15" />
+          <div className="absolute bottom-1/4 right-1/4 w-[600px] h-[600px] bg-[#006633] rounded-full blur-[180px] opacity-15" />
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[#008C45] rounded-full blur-[220px] opacity-10" />
         </div>
-        {/* 光晕效果 */}
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#00a859] rounded-full blur-[128px] opacity-20" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[#00cc6a] rounded-full blur-[128px] opacity-20" />
+        
+        {/* 邮政数据网格线 */}
+        <div className="absolute inset-0 opacity-5">
+          <div 
+            className="h-full w-full"
+            style={{
+              backgroundImage: `
+                linear-gradient(rgba(11, 148, 68, 0.3) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(11, 148, 68, 0.3) 1px, transparent 1px)
+              `,
+              backgroundSize: '80px 80px'
+            }}
+          />
+        </div>
       </div>
       
-      {/* 邮政风格闪烁网格 */}
+      {/* 邮政绿色闪烁点 */}
       <FlickeringGrid
         className="absolute inset-0 z-10"
-        squareSize={3}
-        gridGap={6}
-        color="#00ff88"
-        maxOpacity={0.4}
-        flickerChance={0.3}
+        squareSize={4}
+        gridGap={8}
+        color="#0B9444"
+        maxOpacity={0.5}
+        flickerChance={0.4}
       />
       
-      {/* 邮政信封遮罩层 */}
+      {/* 邮政信封遮罩层 - 绿色渐变 */}
       <div 
-        className="absolute inset-0 z-5 mask-[url(/images/post.svg)] mask-size-[100vw_100vh] mask-center mask-no-repeat"
+        className="absolute inset-0 z-20 mask-[url(/images/post.svg)] mask-size-[100vw_100vh] mask-center mask-no-repeat"
         style={{
-          background: 'radial-gradient(ellipse at center, rgba(0,255,136,0.15) 0%, rgba(0,102,51,0) 70%)'
+          background: 'radial-gradient(ellipse at center, rgba(11,148,68,0.25) 0%, rgba(11,148,68,0.15) 40%, rgba(11,148,68,0) 70%)'
         }}
       />
       <div className="container-md relative z-10 mx-auto flex min-h-[92svh] flex-col items-center justify-center px-4 pt-20 pb-14">
