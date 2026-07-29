@@ -74,9 +74,8 @@ export function Hero({ className }: { className?: string }) {
           </a>
         )}
         <p className="text-muted-foreground mt-8 max-w-4xl text-center text-base leading-7 text-shadow-sm sm:text-xl md:text-2xl">
-          An open-source SuperAgent harness that researches, codes, and creates.
-          With the help of sandboxes, memories, tools, skills and subagents, it
-          handles different levels of tasks that could take minutes to hours.
+          基于沙箱、记忆、工具、技能和子智能体，
+          邮览官能够处理从几分钟到几小时不等的各类任务。
         </p>
         <Link href="/workspace">
           <Button className="mt-8 h-11 px-5" size="lg">
