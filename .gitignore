@@ -1,0 +1,54 @@
+# ============================================
+# PostViewAgent (慧邮智析)
+# 基于 DeerFlow 2.0 构建的邮政经营分析智能体
+# ============================================
+
+# Python 虚拟环境
+.venv/
+
+# DeerFlow 运行时数据
+.deer-flow/
+backend/.deer-flow/
+
+# 配置文件（包含敏感信息）
+config.yaml
+.env
+
+# 日志文件
+logs/
+*.log
+
+# 前端构建产物
+frontend/.next/
+frontend/node_modules/
+
+# Node.js 包管理缓存
+.pnpm-store/
+sandbox_image_cache.tar
+
+# OS 生成文件
+.DS_Store
+Thumbs.db
+._*
+.Spotlight-V100
+.Trashes
+
+# IDE 配置
+.idea/
+.vscode/
+
+# 临时文件
+*.tmp
+*.bak
+*.swp
+*~
+
+# 测试报告
+coverage/
+*.coverage
+htmlcov/
+
+# 构建产物
+dist/
+build/
+*.egg-info/
