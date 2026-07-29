@@ -85,7 +85,7 @@ export const zhCN: Translations = {
   welcome: {
     greeting: "你好，欢迎回来！",
     description:
-      "欢迎使用 📮 邮览官，一个完全开源的邮政经营分析智能体。基于 DeerFlow 2.0 构建，\n邮览官可以帮您分析寄递业务数据、诊断服务质量、预测业务趋势，\n为邮政经营决策提供智能支持。",
+      "欢迎使用 📮 邮览官，一个完全开源的邮政经营分析智能体。\n邮览官可以帮您分析寄递业务数据、诊断服务质量、预测业务趋势，\n为邮政经营决策提供智能支持。",
 
     createYourOwnSkill: "创建您的业务分析技能",
     createYourOwnSkillDescription:
@@ -1040,7 +1040,7 @@ export const zhCN: Translations = {
     passwordPlaceholder: "•••••••",
     rememberMe: "保持登录",
     rememberMeDescription:
-      "下次打开 DeerFlow 时尽量保持当前会话，仅保存邮箱，不保存密码。",
+      "下次打开邮览官时尽量保持当前会话，仅保存邮箱，不保存密码。",
     pleaseWait: "请稍候...",
     signIn: "登录",
     createAccount: "创建账号",
