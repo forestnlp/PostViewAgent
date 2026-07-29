@@ -13,19 +13,18 @@ import { env } from "@/env";
 import { cn } from "@/lib/utils";
 
 const HERO_WORDS = [
-  "Deep Research",
-  "Collect Data",
-  "Analyze Data",
-  "Generate Webpages",
-  "Vibe Coding",
-  "Generate Slides",
-  "Generate Images",
-  "Generate Podcasts",
-  "Generate Videos",
-  "Generate Songs",
-  "Organize Emails",
-  "Do Anything",
-  "Learn Anything",
+  "智能问数",
+  "业务诊断",
+  "趋势预测",
+  "网络优化",
+  "寄递分析",
+  "服务质量",
+  "业务量预测",
+  "物流规划",
+  "数据可视化",
+  "智能决策",
+  "邮政分析",
+  "智能体协作",
 ];
 
 export function Hero({ className }: { className?: string }) {
@@ -47,7 +46,7 @@ export function Hero({ className }: { className?: string }) {
         />
       </div>
       <FlickeringGrid
-        className="absolute inset-0 z-0 mask-[url(/images/deer.svg)] mask-size-[100vw] mask-center mask-no-repeat md:mask-size-[72vh]"
+        className="absolute inset-0 z-0 mask-[url(/images/post.svg)] mask-size-[100vw] mask-center mask-no-repeat md:mask-size-[72vh]"
         squareSize={4}
         gridGap={4}
         color={"white"}
@@ -56,11 +55,11 @@ export function Hero({ className }: { className?: string }) {
       />
       <div className="container-md relative z-10 mx-auto flex min-h-[92svh] flex-col items-center justify-center px-4 pt-20 pb-14">
         <h1 className="text-center text-5xl leading-tight font-bold break-words md:text-6xl">
-          DeerFlow
+          邮览官
         </h1>
         <div className="mt-3 flex w-full max-w-full min-w-0 items-center justify-center gap-x-2 text-center text-2xl font-semibold md:text-4xl">
           <HeroWordRotate words={HERO_WORDS} />
-          <span className="whitespace-nowrap">SuperAgent</span>
+          <span className="whitespace-nowrap">邮政经营分析智能体</span>
         </div>
         {env.NEXT_PUBLIC_STATIC_WEBSITE_ONLY && (
           <a

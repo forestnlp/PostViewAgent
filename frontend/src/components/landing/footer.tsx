@@ -23,7 +23,8 @@ export function Footer({ className }: FooterProps) {
       </div>
       <div className="text-muted-foreground container mb-8 flex flex-col items-center justify-center text-xs">
         <p>Licensed under MIT License</p>
-        <p>&copy; {year} DeerFlow</p>
+        <p>&copy; {year} 邮览官 (PostViewAgent)</p>
+        <p className="mt-1 text-muted-foreground/70">基于 DeerFlow 2.0 构建</p>
       </div>
     </footer>
   );

@@ -1,69 +1,73 @@
 /**
- * About DeerFlow markdown content. Inlined to avoid raw-loader dependency
+ * About 邮览官 markdown content. Inlined to avoid raw-loader dependency
  * (Turbopack cannot resolve raw-loader for .md imports).
  */
 import { APP_VERSION } from "@/version";
 
-export const aboutMarkdown = `# 🦌 [About DeerFlow ${APP_VERSION}](https://github.com/bytedance/deer-flow)
+export const aboutMarkdown = `# 📮 [关于邮览官 ${APP_VERSION}](https://github.com/forestnlp/PostViewAgent)
 
-> **From Open Source, Back to Open Source**
+> **基于 DeerFlow 2.0 构建的邮政经营分析智能体**
 
-DeerFlow (**D**eep **E**xploration and **E**fficient **R**esearch **Flow**) is an open-source **super agent harness** that orchestrates **sub-agents**, **memory**, and **sandboxes** to do almost anything — powered by **extensible skills**.
-
----
-
-## 🚀 Core Features
-
-* **Skills & Tools**: With built-in and extensible skills and tools, DeerFlow can do almost anything.
-* **Sub-Agents**: Sub-Agents help the main agent to do the tasks that are too complex to be done by the main agent.
-* **Sandbox & File System**: Safely execute code and manipulate files in the sandbox.
-* **Context Engineering**: Isolated sub-agent context, summarization to keep the context window sharp.
-* **Long-Term Memory**: Keep recording the user's profile, top of mind, and conversation history.
+邮览官（**Y**ou **L**an **G**uan - **P**ost **V**iew **A**gent）是一个基于 DeerFlow 2.0 构建的邮政经营分析智能体，专注于寄递业务数据分析、服务质量诊断和业务趋势预测。
 
 ---
 
-## 🌟 GitHub Repository
+## 🚀 核心功能
 
-![Star History Chart](https://api.star-history.com/svg?repos=bytedance/deer-flow&type=Date)
-
-Explore DeerFlow on GitHub: [github.com/bytedance/deer-flow](https://github.com/bytedance/deer-flow)
-
-## 🌐 Official Website
-
-Visit the official website of DeerFlow: [deerflow.tech](https://deerflow.tech/)
-
-## 📧 Support
-
-If you have any questions or need help, please contact us at [support@deerflow.tech](mailto:support@deerflow.tech).
+* **智能问数**: 自然语言查询邮政业务数据，自动生成 SQL 和可视化图表
+* **业务诊断**: 寄递服务质量智能分析，异常预警和问题线路识别
+* **趋势预测**: 业务量与收入智能预测，支持时间序列分析
+* **网络优化**: 三级物流体系智能规划，路径优化和资源调度
+* **子智能体协作**: 多个专业智能体协同完成复杂任务
+* **长期记忆**: 记录用户偏好、业务重点和对话历史
 
 ---
 
-## 📜 License
+## 🌟 GitHub 仓库
 
-DeerFlow is proudly open source and distributed under the **MIT License**.
+![Star History](https://api.star-history.com/svg?repos=forestnlp/PostViewAgent&type=Date)
+
+在 GitHub 上探索邮览官：[github.com/forestnlp/PostViewAgent](https://github.com/forestnlp/PostViewAgent)
+
+## 🌐 技术基础
+
+邮览官基于 [DeerFlow 2.0](https://github.com/bytedance/deer-flow) 构建，这是一个开源的超级智能体编排框架。
+
+## 📧 支持
+
+如有任何问题或需要帮助，请联系邮政技术支持。
 
 ---
 
-## 🙌 Acknowledgments
+## 📜 许可证
 
-We extend our heartfelt gratitude to the open source projects and contributors who have made DeerFlow a reality. We truly stand on the shoulders of giants.
+邮览官基于 **MIT License** 开源。
 
-### Core Frameworks
-- **[LangChain](https://github.com/langchain-ai/langchain)**: A phenomenal framework that powers our LLM interactions and chains.
-- **[LangGraph](https://github.com/langchain-ai/langgraph)**: Enabling sophisticated multi-agent orchestration.
-- **[Next.js](https://nextjs.org/)**: A cutting-edge framework for building web applications.
+核心框架基于 DeerFlow 2.0 (MIT License)。
 
-### UI Libraries
-- **[Shadcn](https://ui.shadcn.com/)**: Minimalistic components that power our UI.
-- **[SToneX](https://github.com/stonexer)**: For his invaluable contribution to token-by-token visual effects.
+---
 
-These outstanding projects form the backbone of DeerFlow and exemplify the transformative power of open source collaboration.
+## 🙌 致谢
 
-### Special Thanks
-Finally, we want to express our heartfelt gratitude to the core authors of DeerFlow 1.0 and 2.0:
+我们衷心感谢为邮览官做出贡献的开源项目和贡献者。我们真正站在巨人的肩膀上。
+
+### 核心框架
+- **[DeerFlow 2.0](https://github.com/bytedance/deer-flow)**: 提供智能体编排、沙箱执行和记忆系统
+- **[LangChain](https://github.com/langchain-ai/langchain)**: 强大的 LLM 交互框架
+- **[LangGraph](https://github.com/langchain-ai/langgraph)**: 高级多智能体编排
+- **[Next.js](https://nextjs.org/)**: 现代化的 Web 应用框架
+
+### UI 库
+- **[Shadcn](https://ui.shadcn.com/)**: 简洁的 UI 组件
+- **[SToneX](https://github.com/stonexer)**: 逐字视觉效果的贡献者
+
+这些优秀的项目构成了邮览官的核心基础，体现了开源协作的变革力量。
+
+### 特别感谢
+最后，我们要向 DeerFlow 1.0 和 2.0 的核心作者表达最诚挚的感谢：
 
 - **[Daniel Walnut](https://github.com/hetaoBackend/)**
 - **[Henry Li](https://github.com/magiccube/)**
 
-Without their vision, passion and dedication, \`DeerFlow\` would not be what it is today.
+没有他们的愿景、激情和奉献，邮览官就不会是今天的模样。
 `;
