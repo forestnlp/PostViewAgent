@@ -73,6 +73,20 @@ export function Hero({ className }: { className?: string }) {
       
       {/* 内容层 */}
       <div className="container-md relative z-10 mx-auto flex min-h-[92svh] flex-col items-center justify-center px-4 pt-20 pb-14">
+        {/* Logo 和标题 */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="text-center"
+        >
+          <h1 className="text-center text-6xl leading-tight font-bold break-words md:text-7xl lg:text-8xl">
+            <span className="bg-gradient-to-r from-[#0B9444] via-[#00d166] to-[#0B9444] bg-clip-text text-transparent">
+              邮览官
+            </span>
+          </h1>
+        </motion.div>
+        
         {/* 动态关键词 */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -103,7 +117,7 @@ export function Hero({ className }: { className?: string }) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.6 }}
-          className="mt-10 flex flex-wrap items-center justify-center gap-4"
+          className="mt-10"
         >
           <Link href="/workspace">
             <Button 
@@ -114,40 +128,6 @@ export function Hero({ className }: { className?: string }) {
               <ChevronRightIcon className="ml-2 size-5" />
             </Button>
           </Link>
-          
-          <Link href="/workspace/chats/new">
-            <Button 
-              className="h-12 px-8 text-base bg-transparent hover:bg-white/10 text-[#0B9444] border border-[#0B9444]/50 transition-all duration-300" 
-              size="lg"
-            >
-              <span>快速体验</span>
-            </Button>
-          </Link>
-        </motion.div>
-        
-        {/* 特性标签 */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.8, delay: 0.8 }}
-          className="mt-12 flex flex-wrap items-center justify-center gap-6 text-sm text-[#88c5a0]"
-        >
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 bg-[#0B9444] rounded-full animate-pulse" />
-            <span>智能分析</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 bg-[#0B9444] rounded-full animate-pulse" style={{ animationDelay: '0.2s' }} />
-            <span>实时诊断</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 bg-[#0B9444] rounded-full animate-pulse" style={{ animationDelay: '0.4s' }} />
-            <span>精准预测</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 bg-[#0B9444] rounded-full animate-pulse" style={{ animationDelay: '0.6s' }} />
-            <span>智能决策</span>
-          </div>
         </motion.div>
       </div>
       
