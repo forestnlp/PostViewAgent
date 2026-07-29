@@ -13,25 +13,14 @@ export type HeaderProps = {
 };
 
 export async function Header({ className, homeURL, locale }: HeaderProps) {
-  const { locale: resolvedLocale } = await getI18n(locale);
-  const lang = resolvedLocale.substring(0, 2);
   return (
     <header
       className={cn(
-        "container-md fixed top-0 right-0 left-0 z-20 mx-auto flex h-16 items-center justify-between gap-3 px-4 backdrop-blur-xs",
+        "container-md fixed top-0 right-0 left-0 z-20 mx-auto flex h-16 items-center justify-between px-4 backdrop-blur-xs",
         className,
       )}
     >
-      <div className="flex min-w-0 items-center gap-6">
-        <a
-          href={homeURL ?? "https://github.com/forestnlp/PostViewAgent"}
-          target={homeURL ? "_self" : "_blank"}
-          rel={homeURL ? undefined : "noopener noreferrer"}
-          className="font-serif text-xl whitespace-nowrap"
-        >
-          邮览官
-        </a>
-      </div>
+      {/* Logo 已移除，只保留右侧内容（如有） */}
     </header>
   );
 }
