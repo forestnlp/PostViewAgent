@@ -30,82 +30,143 @@ export function Hero({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        "relative flex size-full flex-col items-center justify-center",
+        "relative flex size-full flex-col items-center justify-center overflow-hidden",
         className,
       )}
     >
-      {/* 黑色背景 */}
-      <div className="absolute inset-0 z-0 bg-black">
-        {/* 邮政绿色渐变光晕 */}
-        <div className="absolute top-0 left-0 w-full h-full">
-          <div className="absolute top-1/4 left-1/4 w-[600px] h-[600px] bg-[#0B9444] rounded-full blur-[180px] opacity-15" />
-          <div className="absolute bottom-1/4 right-1/4 w-[600px] h-[600px] bg-[#006633] rounded-full blur-[180px] opacity-15" />
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[#008C45] rounded-full blur-[220px] opacity-10" />
+      {/* 渐变背景层 */}
+      <div className="absolute inset-0 z-0">
+        {/* 深绿到黑的渐变 */}
+        <div className="absolute inset-0 bg-gradient-to-br from-[#0a1f0d] via-[#051406] to-black" />
+        
+        {/* 邮政绿色光晕 - 更柔和 */}
+        <div className="absolute inset-0">
+          <div className="absolute top-1/4 left-1/4 w-[800px] h-[800px] bg-[#0B9444] rounded-full blur-[200px] opacity-20" />
+          <div className="absolute bottom-1/4 right-1/4 w-[600px] h-[600px] bg-[#00d166] rounded-full blur-[180px] opacity-15" />
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[1000px] h-[1000px] bg-[#008C45] rounded-full blur-[250px] opacity-10" />
         </div>
         
-        {/* 邮政数据网格线 */}
-        <div className="absolute inset-0 opacity-5">
+        {/* 细网格线 - 更精致 */}
+        <div className="absolute inset-0 opacity-[0.03]">
           <div 
             className="h-full w-full"
             style={{
               backgroundImage: `
-                linear-gradient(rgba(11, 148, 68, 0.3) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(11, 148, 68, 0.3) 1px, transparent 1px)
+                linear-gradient(rgba(11, 148, 68, 0.5) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(11, 148, 68, 0.5) 1px, transparent 1px)
               `,
-              backgroundSize: '80px 80px'
+              backgroundSize: '60px 60px'
             }}
           />
         </div>
       </div>
       
-      {/* 邮政绿色闪烁点 */}
+      {/* 邮政绿色粒子效果 */}
       <FlickeringGrid
         className="absolute inset-0 z-10"
-        squareSize={4}
-        gridGap={8}
+        squareSize={3}
+        gridGap={6}
         color="#0B9444"
-        maxOpacity={0.5}
-        flickerChance={0.4}
+        maxOpacity={0.35}
+        flickerChance={0.3}
       />
       
-      {/* 邮政信封遮罩层 - 绿色渐变 (降低层级，只作为视觉装饰) */}
-      <div 
-        className="absolute inset-0 z-5 mask-[url(/images/post.svg)] mask-size-[100vw_100vh] mask-center mask-no-repeat pointer-events-none"
-        style={{
-          background: 'radial-gradient(ellipse at center, rgba(11,148,68,0.25) 0%, rgba(11,148,68,0.15) 40%, rgba(11,148,68,0) 70%)'
-        }}
-      />
+      {/* 内容层 */}
       <div className="container-md relative z-10 mx-auto flex min-h-[92svh] flex-col items-center justify-center px-4 pt-20 pb-14">
-        <h1 className="text-center text-5xl leading-tight font-bold break-words md:text-6xl">
-          邮览官
-        </h1>
-        <div className="mt-3 flex w-full max-w-full min-w-0 items-center justify-center gap-x-2 text-center text-2xl font-semibold md:text-4xl">
-          <HeroWordRotate words={HERO_WORDS} />
-          <span className="whitespace-nowrap">邮政经营分析智能体</span>
-        </div>
-        {env.NEXT_PUBLIC_STATIC_WEBSITE_ONLY && (
-          <a
-            href="https://byteplus.com"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <div className="mt-4 flex size-fit items-center rounded-lg border border-white px-3 text-center text-shadow-sm">
-              <span>In partnership with</span>&nbsp;
-              <BytePlusIcon className="h-4" />
-            </div>
-          </a>
-        )}
-        <p className="text-muted-foreground mt-8 max-w-4xl text-center text-base leading-7 text-shadow-sm sm:text-xl md:text-2xl">
-          基于沙箱、记忆、工具、技能和子智能体，
-          邮览官能够处理从几分钟到几小时不等的各类任务。
-        </p>
-        <Link href="/workspace">
-          <Button className="mt-8 h-11 px-5" size="lg">
-            <span className="text-md">开始使用</span>
-            <ChevronRightIcon className="size-4" />
-          </Button>
-        </Link>
+        {/* Logo 和标题 */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="text-center"
+        >
+          <h1 className="text-center text-6xl leading-tight font-bold break-words md:text-7xl lg:text-8xl">
+            <span className="bg-gradient-to-r from-[#0B9444] via-[#00d166] to-[#0B9444] bg-clip-text text-transparent">
+              邮览官
+            </span>
+          </h1>
+        </motion.div>
+        
+        {/* 动态关键词 */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="mt-6 flex w-full max-w-4xl items-center justify-center gap-3 text-center"
+        >
+          <div className="text-2xl font-semibold text-white md:text-3xl lg:text-4xl">
+            <HeroWordRotate words={HERO_WORDS} />
+          </div>
+          <span className="text-lg text-[#0B9444] font-medium hidden sm:inline-block">|</span>
+          <span className="text-lg text-[#0B9444] font-medium">邮政经营分析智能体</span>
+        </motion.div>
+        
+        {/* 描述文字 */}
+        <motion.p
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.4 }}
+          className="text-[#a0d4b8] mt-8 max-w-3xl text-center text-lg leading-8 md:text-xl"
+        >
+          基于先进的 AI 智能体架构，邮览官能够智能分析邮政业务数据、诊断服务质量、
+          预测业务趋势，为邮政经营决策提供全方位智能支持。
+        </motion.p>
+        
+        {/* 按钮组 */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.6 }}
+          className="mt-10 flex flex-wrap items-center justify-center gap-4"
+        >
+          <Link href="/workspace">
+            <Button 
+              className="h-12 px-8 text-base bg-[#0B9444] hover:bg-[#00d166] text-white border-0 shadow-lg shadow-[#0B9444]/30 transition-all duration-300" 
+              size="lg"
+            >
+              <span>开始使用</span>
+              <ChevronRightIcon className="ml-2 size-5" />
+            </Button>
+          </Link>
+          
+          <Link href="/workspace/chats/new">
+            <Button 
+              className="h-12 px-8 text-base bg-transparent hover:bg-white/10 text-[#0B9444] border border-[#0B9444]/50 transition-all duration-300" 
+              size="lg"
+            >
+              <span>快速体验</span>
+            </Button>
+          </Link>
+        </motion.div>
+        
+        {/* 特性标签 */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.8, delay: 0.8 }}
+          className="mt-12 flex flex-wrap items-center justify-center gap-6 text-sm text-[#88c5a0]"
+        >
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 bg-[#0B9444] rounded-full animate-pulse" />
+            <span>智能分析</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 bg-[#0B9444] rounded-full animate-pulse" style={{ animationDelay: '0.2s' }} />
+            <span>实时诊断</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 bg-[#0B9444] rounded-full animate-pulse" style={{ animationDelay: '0.4s' }} />
+            <span>精准预测</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 bg-[#0B9444] rounded-full animate-pulse" style={{ animationDelay: '0.6s' }} />
+            <span>智能决策</span>
+          </div>
+        </motion.div>
       </div>
+      
+      {/* 底部装饰线 */}
+      <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#0B9444]/30 to-transparent" />
     </div>
   );
 }
