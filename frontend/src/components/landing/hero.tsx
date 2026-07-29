@@ -108,8 +108,7 @@ export function Hero({ className }: { className?: string }) {
           transition={{ duration: 0.6, delay: 0.4 }}
           className="text-[#a0d4b8] mt-8 max-w-3xl text-center text-lg leading-8 md:text-xl"
         >
-          邮览官可以帮您分析寄递业务数据、诊断服务质量、预测业务趋势，
-          为邮政经营决策提供智能支持。
+          聚焦 AI+ 管理，用<span className="text-[#0B9444] font-semibold">智能问数、业务诊断、趋势预测</span>来实现邮政全域经营分析。
         </motion.p>
         
         {/* 按钮组 */}
