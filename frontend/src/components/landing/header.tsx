@@ -36,12 +36,14 @@ export async function Header({ className, homeURL, locale }: HeaderProps) {
         </a>
       </div>
       <nav className="ml-auto hidden items-center gap-5 text-sm font-medium sm:flex md:mr-8 md:gap-8">
-        <Link
-          href={`/${lang}/docs`}
+        <a
+          href="https://github.com/forestnlp/PostViewAgent/tree/main/docs"
+          target="_blank"
+          rel="noopener noreferrer"
           className="text-secondary-foreground hover:text-foreground transition-colors"
         >
           {t.home.docs}
-        </Link>
+        </a>
       </nav>
       <div className="relative">
         <Button
@@ -62,7 +64,7 @@ export async function Header({ className, homeURL, locale }: HeaderProps) {
       </div>
       <MobileNav
         links={[
-          { href: `/${lang}/docs`, label: t.home.docs },
+          { href: "https://github.com/forestnlp/PostViewAgent/tree/main/docs", label: t.home.docs },
         ]}
       />
       <hr className="from-border/0 via-border/70 to-border/0 absolute top-16 right-0 left-0 z-10 m-0 h-px w-full border-none bg-linear-to-r" />

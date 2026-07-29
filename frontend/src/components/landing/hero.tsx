@@ -79,7 +79,7 @@ export function Hero({ className }: { className?: string }) {
         </p>
         <Link href="/workspace">
           <Button className="mt-8 h-11 px-5" size="lg">
-            <span className="text-md">Get Started with 2.0</span>
+            <span className="text-md">开始使用</span>
             <ChevronRightIcon className="size-4" />
           </Button>
         </Link>
