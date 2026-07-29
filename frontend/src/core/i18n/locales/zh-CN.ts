@@ -85,7 +85,7 @@ export const zhCN: Translations = {
   welcome: {
     greeting: "你好，欢迎回来！",
     description:
-      "欢迎使用 📮 邮览官，一个完全开源的邮政经营分析智能体。\n邮览官可以帮您分析寄递业务数据、诊断服务质量、预测业务趋势，\n为邮政经营决策提供智能支持。",
+      "欢迎使用 📮 邮览官。\n邮览官可以帮您分析寄递业务数据、诊断服务质量、预测业务趋势，\n为邮政经营决策提供智能支持。",
 
     createYourOwnSkill: "创建您的业务分析技能",
     createYourOwnSkillDescription:
@@ -473,10 +473,10 @@ export const zhCN: Translations = {
     officialWebsite: "访问 DeerFlow 官方网站",
     githubTooltip: "访问 DeerFlow 的 GitHub 仓库",
     settingsAndMore: "设置和更多",
-    visitGithub: "在 GitHub 上查看 DeerFlow",
+    visitGithub: "在 GitHub 上查看邮览官",
     reportIssue: "报告问题",
     contactUs: "联系我们",
-    about: "关于 DeerFlow",
+    about: "关于邮览官",
     logout: "退出登录",
     gatewayUnavailable: "网关暂时不可用。",
     gatewayUnavailableRetrying: "正在后台重试…",
