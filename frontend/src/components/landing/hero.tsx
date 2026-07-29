@@ -73,20 +73,6 @@ export function Hero({ className }: { className?: string }) {
       
       {/* 内容层 */}
       <div className="container-md relative z-10 mx-auto flex min-h-[92svh] flex-col items-center justify-center px-4 pt-20 pb-14">
-        {/* Logo 和标题 */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="text-center"
-        >
-          <h1 className="text-center text-6xl leading-tight font-bold break-words md:text-7xl lg:text-8xl">
-            <span className="bg-gradient-to-r from-[#0B9444] via-[#00d166] to-[#0B9444] bg-clip-text text-transparent">
-              邮览官
-            </span>
-          </h1>
-        </motion.div>
-        
         {/* 动态关键词 */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
