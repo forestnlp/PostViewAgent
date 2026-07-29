@@ -108,7 +108,9 @@ export function Hero({ className }: { className?: string }) {
           transition={{ duration: 0.6, delay: 0.4 }}
           className="text-[#a0d4b8] mt-8 max-w-3xl text-center text-lg leading-8 md:text-xl"
         >
-          聚焦 AI+ 管理，用<span className="text-[#0B9444] font-semibold">智能问数、业务诊断、趋势预测</span>来实现邮政全域经营分析。
+          基于先进的 AI 智能体架构，采用内网垂直模型，确保数据安全。
+          邮览官能够智能分析邮政业务数据、诊断服务质量、预测业务趋势，
+          为邮政经营决策提供全方位智能支持。
         </motion.p>
         
         {/* 按钮组 */}
