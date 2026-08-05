@@ -1,0 +1,167 @@
+# 邮政经营指标知识库
+# 定义邮政寄递业务可用的指标、维度和计算规则
+
+version: "1.0"
+updated: "2024-08-05"
+
+# 数据源信息
+data_source:
+  name: "寄递 CRM 系统 - 商企客户数据"
+  file: "商企客户业务数据_演示版.csv"
+  record_count: 1691
+  description: "商企客户的寄递业务经营数据，包含区域、行业、客户等级等多维度信息"
+
+# 维度定义
+dimensions:
+  # 区域维度
+  - name: "省份区划名称"
+    type: "string"
+    category: "区域"
+    description: "省份/自治区/直辖市名称"
+    example_values: ["湖北省", "江苏省", "浙江省", "广东省"]
+    
+  - name: "地市区划名称"
+    type: "string"
+    category: "区域"
+    description: "地级市/自治州/地区名称"
+    example_values: ["武汉市", "南京市", "杭州市", "广州市"]
+    
+  - name: "区县区划名称"
+    type: "string"
+    category: "区域"
+    description: "区/县/县级市名称"
+    
+  - name: "区划层级"
+    type: "integer"
+    category: "区域"
+    description: "行政层级：4=省，5=市，6=区县"
+
+  # 行业维度
+  - name: "行业一级"
+    type: "integer"
+    category: "行业"
+    description: "行业一级分类代码"
+    
+  - name: "行业二级"
+    type: "string"
+    category: "行业"
+    description: "行业二级分类名称"
+    example_values: ["金融类", "生鲜特产", "电商类", "其他"]
+    
+  - name: "行业三级"
+    type: "string"
+    category: "行业"
+    description: "行业三级分类名称"
+    example_values: ["冷鲜类", "其他类", "特产类"]
+
+  # 客户维度
+  - name: "客户等级"
+    type: "string"
+    category: "客户"
+    description: "客户分级等级"
+    example_values: ["钻石", "铂金", "黄金", "其他"]
+    
+  - name: "法定客户名称"
+    type: "string"
+    category: "客户"
+    description: "客户法定全称"
+
+# 指标定义
+metrics:
+  # 统计期指标（当前周期）
+  - name: "统计期业务量_万件"
+    type: "numeric"
+    category: "业务指标"
+    unit: "万件"
+    description: "统计期内的寄递业务量"
+    agg_functions: ["sum", "avg", "max", "min", "count"]
+    
+  - name: "统计期收入_万元"
+    type: "numeric"
+    category: "业务指标"
+    unit: "万元"
+    description: "统计期内的业务收入"
+    agg_functions: ["sum", "avg", "max", "min", "count"]
+    
+  - name: "统计期重量_kg"
+    type: "numeric"
+    category: "业务指标"
+    unit: "kg"
+    description: "统计期内的寄递重量"
+    agg_functions: ["sum", "avg", "max", "min", "count"]
+
+  # 对比期指标（对比周期）
+  - name: "对比期业务量_万件"
+    type: "numeric"
+    category: "业务指标"
+    unit: "万件"
+    description: "对比期内的寄递业务量"
+    agg_functions: ["sum", "avg", "max", "min", "count"]
+    
+  - name: "对比期收入_万元"
+    type: "numeric"
+    category: "业务指标"
+    unit: "万元"
+    description: "对比期内的业务收入"
+    agg_functions: ["sum", "avg", "max", "min", "count"]
+    
+  - name: "对比期重量_kg"
+    type: "numeric"
+    category: "业务指标"
+    unit: "kg"
+    description: "对比期内的寄递重量"
+    agg_functions: ["sum", "avg", "max", "min", "count"]
+
+# 常用查询模板
+query_templates:
+  - name: "区域业务排名"
+    description: "查询各区域业务量排名"
+    template: |
+      --action aggregate
+      --group-by "{dimension}"
+      --metrics "统计期业务量_万件:sum，统计期收入_万元:sum"
+      --order-by "统计期业务量_万件:desc"
+      --limit 10
+    examples:
+      - dimension: "地市区划名称"
+        query: "按城市业务量排名"
+      - dimension: "省份区划名称"
+        query: "按省份业务量排名"
+      
+  - name: "行业分析"
+    description: "按行业分类分析业务情况"
+    template: |
+      --action aggregate
+      --group-by "行业二级"
+      --metrics "统计期业务量_万件:sum，统计期收入_万元:sum"
+      --order-by "统计期业务量_万件:desc"
+    examples:
+      - query: "各行业业务量统计"
+      
+  - name: "top 客户查询"
+    description: "查询业务量最大的客户"
+    template: |
+      --action query
+      --columns "法定客户名称，{dimension},统计期业务量_万件，统计期收入_万元"
+      --order-by "统计期业务量_万件:desc"
+      --limit 10
+    examples:
+      - dimension: "地市区划名称"
+        query: "各城市 top10 客户"
+
+# 计算指标（衍生指标）
+derived_metrics:
+  - name: "业务量增长率"
+    formula: "(对比期业务量_万件 - 统计期业务量_万件) / 统计期业务量_万件 * 100"
+    unit: "%"
+    description: "业务量环比增长率"
+    
+  - name: "收入增长率"
+    formula: "(对比期收入_万元 - 统计期收入_万元) / 统计期收入_万元 * 100"
+    unit: "%"
+    description: "收入环比增长率"
+    
+  - name: "件均价格"
+    formula: "统计期收入_万元 / 统计期业务量_万件 * 10000"
+    unit: "元/件"
+    description: "平均每件业务收入"
