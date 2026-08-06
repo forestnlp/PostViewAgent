@@ -21,9 +21,9 @@ description: 邮政经营数据查询技能 - 查询寄递业务商企客户数�
 
 数据存储在以下位置：
 
-- **演示数据**: `/mnt/skills/custom/postal-data-query/data/商企客户业务数据_演示版.csv`
-- **字段说明**: `/mnt/skills/custom/postal-data-query/data/字段说明.md`
-- **指标知识库**: `/mnt/skills/custom/postal-data-query/data/metrics_catalog.yaml`
+- **演示数据**: `/mnt/skills/public/postal-data-query/data/商企客户业务数据_演示版.csv`
+- **字段说明**: `/mnt/skills/public/postal-data-query/data/字段说明.md`
+- **指标知识库**: `/mnt/skills/public/postal-data-query/data/metrics_catalog.yaml`
 
 ## 工作流程
 
@@ -41,7 +41,7 @@ description: 邮政经营数据查询技能 - 查询寄递业务商企客户数�
 使用查询脚本执行数据查询：
 
 ```bash
-python /mnt/skills/custom/postal-data-query/scripts/query_data.py \
+python /mnt/skills/public/postal-data-query/scripts/query_data.py \
   --action list_columns
 ```
 
@@ -52,14 +52,14 @@ python /mnt/skills/custom/postal-data-query/scripts/query_data.py \
 #### 查询所有列
 
 ```bash
-python /mnt/skills/custom/postal-data-query/scripts/query_data.py \
+python /mnt/skills/public/postal-data-query/scripts/query_data.py \
   --action list_columns
 ```
 
 #### 按省份查询
 
 ```bash
-python /mnt/skills/custom/postal-data-query/scripts/query_data.py \
+python /mnt/skills/public/postal-data-query/scripts/query_data.py \
   --action query \
   --filter "省份区划名称='江苏省'" \
   --columns "地市区划名称，统计期业务量_万件，统计期收入_万元"
@@ -68,7 +68,7 @@ python /mnt/skills/custom/postal-data-query/scripts/query_data.py \
 #### 按行业统计
 
 ```bash
-python /mnt/skills/custom/postal-data-query/scripts/query_data.py \
+python /mnt/skills/public/postal-data-query/scripts/query_data.py \
   --action aggregate \
   --group-by "行业一级" \
   --metrics "统计期业务量_万件:sum,统计期收入_万元:sum"
@@ -77,7 +77,7 @@ python /mnt/skills/custom/postal-data-query/scripts/query_data.py \
 #### 按区域汇总
 
 ```bash
-python /mnt/skills/custom/postal-data-query/scripts/query_data.py \
+python /mnt/skills/public/postal-data-query/scripts/query_data.py \
   --action aggregate \
   --group-by "地市区划名称" \
   --metrics "统计期业务量_万件:sum,统计期收入_万元:sum" \
@@ -88,7 +88,7 @@ python /mnt/skills/custom/postal-data-query/scripts/query_data.py \
 #### 查询前 10 客户
 
 ```bash
-python /mnt/skills/custom/postal-data-query/scripts/query_data.py \
+python /mnt/skills/public/postal-data-query/scripts/query_data.py \
   --action query \
   --columns "客户名称，行业一级，统计期业务量_万件，统计期收入_万元" \
   --order-by "统计期业务量_万件:desc" \
@@ -98,7 +98,7 @@ python /mnt/skills/custom/postal-data-query/scripts/query_data.py \
 #### 导出数据
 
 ```bash
-python /mnt/skills/custom/postal-data-query/scripts/query_data.py \
+python /mnt/skills/public/postal-data-query/scripts/query_data.py \
   --action query \
   --filter "省份区划名称='浙江省'" \
   --export-to "/mnt/user-data/outputs/浙江商企数据.csv"
@@ -146,14 +146,14 @@ python /mnt/skills/custom/postal-data-query/scripts/query_data.py \
 ### 示例 1: 查看数据结构
 
 ```bash
-python /mnt/skills/custom/postal-data-query/scripts/query_data.py \
+python /mnt/skills/public/postal-data-query/scripts/query_data.py \
   --action list_columns
 ```
 
 ### 示例 2: 江苏省各市区业务量排名
 
 ```bash
-python /mnt/skills/custom/postal-data-query/scripts/query_data.py \
+python /mnt/skills/public/postal-data-query/scripts/query_data.py \
   --action query \
   --filter "省份区划名称='江苏省'" \
   --columns "地市区划名称，统计期业务量_万件，统计期收入_万元" \
@@ -163,7 +163,7 @@ python /mnt/skills/custom/postal-data-query/scripts/query_data.py \
 ### 示例 3: 各行业业务量汇总
 
 ```bash
-python /mnt/skills/custom/postal-data-query/scripts/query_data.py \
+python /mnt/skills/public/postal-data-query/scripts/query_data.py \
   --action aggregate \
   --group-by "行业一级" \
   --metrics "统计期业务量_万件:sum,统计期收入_万元:sum" \
@@ -173,7 +173,7 @@ python /mnt/skills/custom/postal-data-query/scripts/query_data.py \
 ### 示例 4:  top 10 客户
 
 ```bash
-python /mnt/skills/custom/postal-data-query/scripts/query_data.py \
+python /mnt/skills/public/postal-data-query/scripts/query_data.py \
   --action query \
   --columns "客户名称，地市区划名称，统计期业务量_万件，统计期收入_万元" \
   --order-by "统计期业务量_万件:desc" \
@@ -183,7 +183,7 @@ python /mnt/skills/custom/postal-data-query/scripts/query_data.py \
 ### 示例 5: 电商行业分析
 
 ```bash
-python /mnt/skills/custom/postal-data-query/scripts/query_data.py \
+python /mnt/skills/public/postal-data-query/scripts/query_data.py \
   --action query \
   --filter "行业一级='电商'" \
   --columns "客户名称，区县区划名称，统计期业务量_万件，统计期收入_万元，统计期重量_kg" \
@@ -203,11 +203,11 @@ python /mnt/skills/custom/postal-data-query/scripts/query_data.py \
 
 ```bash
 # 步骤 1: 查看数据结构
-python /mnt/skills/custom/postal-data-query/scripts/query_data.py \
+python /mnt/skills/public/postal-data-query/scripts/query_data.py \
   --action list_columns
 
 # 步骤 2: 执行查询
-python /mnt/skills/custom/postal-data-query/scripts/query_data.py \
+python /mnt/skills/public/postal-data-query/scripts/query_data.py \
   --action query \
   --filter "省份区划名称='江苏省'" \
   --columns "地市区划名称，统计期业务量_万件，统计期收入_万元" \
