@@ -296,9 +296,7 @@ export default function SetupPage() {
       <div className="border-border/20 bg-background/5 w-full max-w-md space-y-6 rounded-3xl border p-8 backdrop-blur-sm">
         <div className="text-center">
           <h1 className="font-serif text-3xl">邮览官</h1>
-          <p className="text-muted-foreground mt-2">
-            完成管理员账号设置
-          </p>
+          <p className="text-muted-foreground mt-2">完成管理员账号设置</p>
           <p className="text-muted-foreground mt-1 text-xs">
             设置您的真实邮箱和新密码。
           </p>

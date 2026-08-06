@@ -38,29 +38,29 @@ export function Hero({ className }: { className?: string }) {
       <div className="absolute inset-0 z-0">
         {/* 深绿到黑的渐变 */}
         <div className="absolute inset-0 bg-gradient-to-br from-[#0a1f0d] via-[#051406] to-black" />
-        
+
         {/* 邮政绿色光晕 - 更柔和 */}
         <div className="absolute inset-0">
-          <div className="absolute top-1/4 left-1/4 w-[800px] h-[800px] bg-[#0B9444] rounded-full blur-[200px] opacity-20" />
-          <div className="absolute bottom-1/4 right-1/4 w-[600px] h-[600px] bg-[#00d166] rounded-full blur-[180px] opacity-15" />
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[1000px] h-[1000px] bg-[#008C45] rounded-full blur-[250px] opacity-10" />
+          <div className="absolute top-1/4 left-1/4 h-[800px] w-[800px] rounded-full bg-[#0B9444] opacity-20 blur-[200px]" />
+          <div className="absolute right-1/4 bottom-1/4 h-[600px] w-[600px] rounded-full bg-[#00d166] opacity-15 blur-[180px]" />
+          <div className="absolute top-1/2 left-1/2 h-[1000px] w-[1000px] -translate-x-1/2 -translate-y-1/2 transform rounded-full bg-[#008C45] opacity-10 blur-[250px]" />
         </div>
-        
+
         {/* 细网格线 - 更精致 */}
         <div className="absolute inset-0 opacity-[0.03]">
-          <div 
+          <div
             className="h-full w-full"
             style={{
               backgroundImage: `
                 linear-gradient(rgba(11, 148, 68, 0.5) 1px, transparent 1px),
                 linear-gradient(90deg, rgba(11, 148, 68, 0.5) 1px, transparent 1px)
               `,
-              backgroundSize: '60px 60px'
+              backgroundSize: "60px 60px",
             }}
           />
         </div>
       </div>
-      
+
       {/* 邮政绿色粒子效果 */}
       <FlickeringGrid
         className="absolute inset-0 z-10"
@@ -70,7 +70,7 @@ export function Hero({ className }: { className?: string }) {
         maxOpacity={0.35}
         flickerChance={0.3}
       />
-      
+
       {/* 内容层 */}
       <div className="container-md relative z-10 mx-auto flex min-h-[92svh] flex-col items-center justify-center px-4 pt-20 pb-14">
         {/* Logo 和标题 */}
@@ -86,7 +86,7 @@ export function Hero({ className }: { className?: string }) {
             </span>
           </h1>
         </motion.div>
-        
+
         {/* 动态关键词 */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -97,22 +97,26 @@ export function Hero({ className }: { className?: string }) {
           <div className="text-2xl font-semibold text-white md:text-3xl lg:text-4xl">
             <HeroWordRotate words={HERO_WORDS} />
           </div>
-          <span className="text-lg text-[#0B9444] font-medium hidden sm:inline-block">|</span>
-          <span className="text-lg text-[#0B9444] font-medium">邮政经营分析智能体</span>
+          <span className="hidden text-lg font-medium text-[#0B9444] sm:inline-block">
+            |
+          </span>
+          <span className="text-lg font-medium text-[#0B9444]">
+            邮政经营分析智能体
+          </span>
         </motion.div>
-        
+
         {/* 描述文字 */}
         <motion.p
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.4 }}
-          className="text-[#a0d4b8] mt-8 max-w-3xl text-center text-lg leading-8 md:text-xl"
+          className="mt-8 max-w-3xl text-center text-lg leading-8 text-[#a0d4b8] md:text-xl"
         >
           基于先进的 AI 智能体架构，采用内网垂直模型，确保数据安全。
           邮览官能够智能分析邮政业务数据、诊断服务质量、预测业务趋势，
           为邮政经营决策提供全方位智能支持。
         </motion.p>
-        
+
         {/* 按钮组 */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -121,8 +125,8 @@ export function Hero({ className }: { className?: string }) {
           className="mt-10"
         >
           <Link href="/workspace">
-            <Button 
-              className="h-12 px-8 text-base bg-[#0B9444] hover:bg-[#00d166] text-white border-0 shadow-lg shadow-[#0B9444]/30 transition-all duration-300" 
+            <Button
+              className="h-12 border-0 bg-[#0B9444] px-8 text-base text-white shadow-lg shadow-[#0B9444]/30 transition-all duration-300 hover:bg-[#00d166]"
               size="lg"
             >
               <span>开始使用</span>
@@ -131,9 +135,9 @@ export function Hero({ className }: { className?: string }) {
           </Link>
         </motion.div>
       </div>
-      
+
       {/* 底部装饰线 */}
-      <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#0B9444]/30 to-transparent" />
+      <div className="absolute right-0 bottom-0 left-0 h-px bg-gradient-to-r from-transparent via-[#0B9444]/30 to-transparent" />
     </div>
   );
 }

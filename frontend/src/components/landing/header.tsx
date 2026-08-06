@@ -10,15 +10,20 @@ export type HeaderProps = {
   className?: string;
   homeURL?: string;
   locale?: Locale;
-  hideOnHome?: boolean;  // 是否在首页隐藏 Header
+  hideOnHome?: boolean; // 是否在首页隐藏 Header
 };
 
-export async function Header({ className, homeURL, locale, hideOnHome }: HeaderProps) {
+export async function Header({
+  className,
+  homeURL,
+  locale,
+  hideOnHome,
+}: HeaderProps) {
   // 如果是首页且设置了 hideOnHome，完全隐藏 Header
   if (hideOnHome) {
     return null;
   }
-  
+
   return (
     <header
       className={cn(
