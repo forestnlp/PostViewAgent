@@ -3,19 +3,15 @@ import { expect, test } from "@playwright/test";
 import { mockLangGraphAPI } from "./utils/mock-api";
 
 test.describe("Landing page", () => {
-  test("renders the header and hero section", async ({ page }) => {
+  test("renders the hero section", async ({ page }) => {
     await page.goto("/");
 
-    await expect(
-      page.locator("header").first().getByText("DeerFlow", { exact: true }),
-    ).toBeVisible();
+    // 邮览官定制页面：h1 包含"邮览官"
     await expect(page.locator("h1")).toHaveCount(1);
-    await expect(page.locator("h1")).toContainText("DeerFlow");
+    await expect(page.locator("h1")).toContainText("邮览官");
 
-    // "Get Started" call-to-action button in hero
-    await expect(
-      page.getByRole("link", { name: /get started/i }),
-    ).toBeVisible();
+    // "开始使用"按钮
+    await expect(page.getByRole("link", { name: /开始使用/ })).toBeVisible();
   });
 
   for (const width of [320, 375, 390]) {
@@ -30,16 +26,16 @@ test.describe("Landing page", () => {
     });
   }
 
-  test("Get Started link navigates to workspace", async ({ page }) => {
+  test("开始使用 link navigates to workspace", async ({ page }) => {
     mockLangGraphAPI(page);
 
     await page.goto("/");
 
-    const getStarted = page.getByRole("link", { name: /get started/i });
+    const getStarted = page.getByRole("link", { name: /开始使用/ });
     await getStarted.click();
 
-    // Should redirect to /workspace/chats/new
-    await page.waitForURL("**/workspace/chats/new");
-    await expect(page).toHaveURL(/\/workspace\/chats\/new/);
+    // Should redirect to /workspace
+    await page.waitForURL("**/workspace**");
+    await expect(page).toHaveURL(/\/workspace/);
   });
 });
