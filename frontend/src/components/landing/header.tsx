@@ -1,24 +1,14 @@
-import { GitHubLogoIcon } from "@radix-ui/react-icons";
-import Link from "next/link";
-
-import { Button } from "@/components/ui/button";
 import type { Locale } from "@/core/i18n/locale";
-import { getI18n } from "@/core/i18n/server";
 import { cn } from "@/lib/utils";
 
 export type HeaderProps = {
   className?: string;
   homeURL?: string;
   locale?: Locale;
-  hideOnHome?: boolean; // 是否在首页隐藏 Header
+  hideOnHome?: boolean;
 };
 
-export async function Header({
-  className,
-  homeURL,
-  locale,
-  hideOnHome,
-}: HeaderProps) {
+export async function Header({ className, hideOnHome }: HeaderProps) {
   // 如果是首页且设置了 hideOnHome，完全隐藏 Header
   if (hideOnHome) {
     return null;
