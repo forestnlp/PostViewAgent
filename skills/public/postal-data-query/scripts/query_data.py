@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """
-Postal Data Query Script.
+Postal Data Query Script (DuckDB Edition).
 
-查询邮政寄递业务商企客户数据，支持多维度查询、过滤、聚合和导出。
+邮政寄递业务商企客户数据查询工具，基于 DuckDB 分析引擎。
+支持多维度查询、过滤、聚合、导出和数据分析。
 """
 
 import argparse
@@ -12,44 +13,47 @@ import sys
 from pathlib import Path
 
 try:
-    import pandas as pd
+    import duckdb
 except ImportError:
     subprocess = __import__('subprocess')
-    subprocess.run([sys.executable, "-m", "pip", "install", "pandas", "-q"], check=True)
-    import pandas as pd
+    subprocess.run([sys.executable, "-m", "pip", "install", "duckdb", "-q"], check=True)
+    import duckdb
 
 
 # 数据文件路径
 DATA_FILE = Path(__file__).parent.parent / "data" / "商企客户业务数据_演示版.csv"
 
-
-def load_data():
-    """加载 CSV 数据文件"""
-    if not DATA_FILE.exists():
-        print(f"错误：数据文件不存在：{DATA_FILE}")
-        print("请确保数据文件已放置在正确位置")
-        sys.exit(1)
-    
-    try:
-        df = pd.read_csv(DATA_FILE, encoding='utf-8')
-        return df
-    except Exception as e:
-        print(f"错误：读取数据文件失败：{e}")
-        sys.exit(1)
+# DuckDB 连接（内存模式）
+con = duckdb.connect()
 
 
-def action_list_columns(df):
+def get_con():
+    """获取DuckDB连接并注册CSV数据"""
+    # 注册CSV为虚拟表
+    con.execute(f"""
+        CREATE OR REPLACE TABLE postal_customers AS 
+        SELECT * FROM read_csv_auto('{DATA_FILE}', header=true)
+    """)
+    return con
+
+
+def action_list_columns():
     """列出所有可用列及其数据类型"""
+    conn = get_con()
+    df = conn.execute("SELECT * FROM postal_customers LIMIT 1").df()
+
     print("\n" + "=" * 70)
-    print("邮政商企客户数据 - 字段列表")
+    print("邮政寄递商企客户数据 - 字段列表（DuckDB引擎）")
     print("=" * 70)
-    
-    print(f"\n数据总量：{len(df)} 条记录")
+
+    # 获取总行数
+    total = conn.execute("SELECT COUNT(*) FROM postal_customers").fetchone()[0]
+    print(f"\n数据总量：{total} 条记录")
     print(f"字段数量：{len(df.columns)} 个")
-    
-    print("\n可用字段:")
-    print("-" * 70)
-    
+
+    # 获取列信息
+    columns_info = conn.execute("DESCRIBE postal_customers").fetchall()
+
     # 按类别分组显示
     categories = {
         "区划信息": ["省份区划编码", "地市区划编码", "区县区划编码", "地市区划名称", "区县区划名称", "区划层级"],
@@ -58,96 +62,76 @@ def action_list_columns(df):
         "统计期指标": ["统计期业务量_万件", "统计期收入_万元", "统计期重量_kg"],
         "对比期指标": ["对比期业务量_万件", "对比期收入_万元", "对比期重量_kg"],
     }
-    
+
     for category, columns in categories.items():
-        available = [col for col in columns if col in df.columns]
+        available = [col for col in columns if col in [c[0] for c in columns_info]]
         if available:
             print(f"\n【{category}】")
-            for col in available:
-                dtype = str(df[col].dtype)
-                non_null = df[col].notna().sum()
-                print(f"  - {col:<25} ({dtype}, {non_null}条非空)")
-    
+            for col_name in columns:
+                # 查找列类型
+                col_type = "VARCHAR"
+                for c in columns_info:
+                    if c[0] == col_name:
+                        col_type = c[1]
+                        break
+                # 统计非空值
+                try:
+                    non_null = conn.execute(
+                        f"SELECT COUNT(*) FROM postal_customers WHERE {col_name} IS NOT NULL"
+                    ).fetchone()[0]
+                except:
+                    non_null = total
+                print(f"  - {col_name:<25} ({col_type}, {non_null}条非空)")
+
     # 显示示例数据
     print("\n" + "=" * 70)
     print("示例数据 (前 3 条):")
     print("=" * 70)
-    print(df.head(3).to_string(index=False))
-    
-    return df.head(3).to_dict('records')
+    sample = conn.execute("SELECT * FROM postal_customers LIMIT 3").df()
+    print(sample.to_string(index=False))
+
+    # 返回可用列列表
+    return [c[0] for c in columns_info]
 
 
-def action_query(df, filter_expr=None, columns=None, order_by=None, limit=None, export_to=None):
-    """执行查询"""
-    result = df.copy()
-    
-    # 应用过滤条件
-    if filter_expr:
-        try:
-            # 使用 eval 方式解析简单过滤条件
-            # 支持格式：列名='值' 或 列名>数字
-            import re
-            
-            # 解析简单的等值过滤
-            if '=' in filter_expr and '==' not in filter_expr:
-                match = re.match(r"(\S+)\s*=\s*'([^']+)'", filter_expr)
-                if match:
-                    col_name = match.group(1)
-                    value = match.group(2)
-                    result = result[result[col_name] == value]
-                else:
-                    # 尝试数字比较
-                    match = re.match(r"(\S+)\s*>\s*(\d+\.?\d*)", filter_expr)
-                    if match:
-                        col_name = match.group(1)
-                        value = float(match.group(2))
-                        result = result[result[col_name] > value]
-                    else:
-                        raise ValueError(f"不支持的过滤格式：{filter_expr}")
-            
-            print(f"过滤条件：{filter_expr}")
-            print(f"过滤后记录数：{len(result)}")
-        except Exception as e:
-            print(f"过滤条件错误：{e}")
-            sys.exit(1)
-    
+def action_query(filter_expr=None, columns=None, order_by=None, limit=None, export_to=None):
+    """执行SQL查询"""
+    conn = get_con()
+
+    # 构建SQL
+    sql = "SELECT "
+
     # 选择列
     if columns:
-        # 处理中文逗号，统一替换为英文逗号
         columns = columns.replace('，', ',')
         col_list = [c.strip() for c in columns.split(',')]
-        # 检查列是否存在
-        missing_cols = [c for c in col_list if c not in result.columns]
-        if missing_cols:
-            print(f"警告：以下列不存在，将被忽略：{missing_cols}")
-        col_list = [c for c in col_list if c in result.columns]
-        if col_list:
-            result = result[col_list]
-    
+        sql += ', '.join(col_list)
+    else:
+        sql += "*"
+
+    sql += " FROM postal_customers"
+
+    # 过滤条件
+    if filter_expr:
+        sql += f" WHERE {filter_expr}"
+
     # 排序
     if order_by:
-        try:
-            parts = order_by.split(':')
-            col = parts[0].strip()
-            ascending = parts[1].strip().lower() != 'desc' if len(parts) > 1 else True
-            result = result.sort_values(by=col, ascending=ascending)
-        except Exception as e:
-            print(f"排序错误：{e}")
-            sys.exit(1)
-    
+        parts = order_by.split(':')
+        col = parts[0].strip()
+        direction = parts[1].strip().upper() if len(parts) > 1 else 'ASC'
+        sql += f" ORDER BY {col} {direction}"
+
     # 限制数量
     if limit:
-        try:
-            limit = int(limit)
-            result = result.head(limit)
-        except ValueError:
-            print(f"错误：limit 必须是整数")
-            sys.exit(1)
-    
+        sql += f" LIMIT {int(limit)}"
+
+    print(f"\n执行SQL: {sql}")
+    result = conn.execute(sql).df()
+
     # 输出结果
     if export_to:
-        # 导出到文件
-        os.makedirs(os.path.dirname(export_to), exist_ok=True)
+        os.makedirs(os.path.dirname(export_to) if os.path.dirname(export_to) else '.', exist_ok=True)
         if export_to.endswith('.json'):
             result.to_json(export_to, orient='records', force_ascii=False, indent=2)
         else:
@@ -155,162 +139,203 @@ def action_query(df, filter_expr=None, columns=None, order_by=None, limit=None, 
         print(f"\n查询结果已导出到：{export_to}")
         print(f"导出记录数：{len(result)}")
     else:
-        # 打印到控制台
         print("\n" + "=" * 70)
         print(f"查询结果 ({len(result)} 条记录)")
         print("=" * 70)
-        
-        # 格式化显示
+
+        import pandas as pd
         pd.set_option('display.max_columns', None)
         pd.set_option('display.width', None)
         pd.set_option('display.max_colwidth', 30)
-        
-        # 限制显示行数
+
         display_result = result.head(50)
         print(display_result.to_string(index=False))
-        
+
         if len(result) > 50:
             print(f"\n... (共 {len(result)} 条记录，显示前 50 条)")
-    
+
     return result.to_dict('records')
 
 
-def action_aggregate(df, group_by, metrics, order_by=None, limit=None):
-    """执行聚合查询"""
-    try:
-        # 处理中文逗号，统一替换为英文逗号
-        metrics = metrics.replace('，', ',')
-        
-        # 解析指标
-        agg_funcs = {}
+def action_aggregate(group_by, metrics, order_by=None, limit=None):
+    """执行聚合查询（SQL GROUP BY）"""
+    conn = get_con()
+
+    # 处理中文逗号
+    metrics = metrics.replace('，', ',')
+
+    # 构建聚合SQL
+    agg_parts = []
+    for m in metrics.split(','):
+        parts = m.strip().split(':')
+        if len(parts) == 2:
+            col, func = parts
+            func = func.upper()
+            # 处理别名
+            alias = f"{col}_{func.lower()}"
+            agg_parts.append(f"{func}({col}) AS {alias}")
+        else:
+            print(f"错误：指标格式应为 '字段:聚合函数'，得到：{m}")
+            sys.exit(1)
+
+    sql = f"""
+        SELECT {group_by}, {', '.join(agg_parts)}
+        FROM postal_customers
+        GROUP BY {group_by}
+    """
+
+    # 排序
+    if order_by:
+        parts = order_by.split(':')
+        col = parts[0].strip()
+        direction = parts[1].strip().upper() if len(parts) > 1 else 'ASC'
+        # 查找别名
+        alias_col = None
         for m in metrics.split(','):
-            parts = m.strip().split(':')
-            if len(parts) == 2:
-                col, func = parts
-                if col.strip() not in agg_funcs:
-                    agg_funcs[col.strip()] = []
-                agg_funcs[col.strip()].append(func.strip())
-            else:
-                print(f"错误：指标格式应为 '字段：聚合函数'，得到：{m}")
-                sys.exit(1)
-        
-        # 执行聚合 - 使用简化方式
-        agg_dict = {col: funcs[0] if len(funcs) == 1 else funcs for col, funcs in agg_funcs.items()}
-        result = df.groupby(group_by, as_index=False).agg(agg_dict)
-        
-        # 重命名列 - 扁平化多级索引
-        result.columns = [col[1] if isinstance(col, tuple) and col[1] else col[0] if isinstance(col, tuple) else col 
-                         for col in result.columns]
-        
-        # 排序
-        if order_by:
-            parts = order_by.split(':')
-            col = parts[0].strip()
-            ascending = parts[1].strip().lower() != 'desc' if len(parts) > 1 else True
-            result = result.sort_values(by=col, ascending=ascending)
-        
-        # 限制数量
-        if limit:
-            try:
-                limit = int(limit)
-                result = result.head(limit)
-            except ValueError:
-                print(f"错误：limit 必须是整数")
-                sys.exit(1)
-        
-        # 输出结果
-        print("\n" + "=" * 70)
-        print(f"聚合结果 ({len(result)} 条记录)")
-        print(f"分组字段：{group_by}")
-        print(f"聚合指标：{metrics}")
-        print("=" * 70)
-        
-        pd.set_option('display.max_columns', None)
-        pd.set_option('display.width', None)
-        pd.set_option('display.max_colwidth', 30)
-        
-        print(result.to_string(index=False))
-        
-        return result.to_dict('records')
-        
-    except Exception as e:
-        print(f"聚合查询错误：{e}")
-        import traceback
-        traceback.print_exc()
+            p = m.strip().split(':')
+            if len(p) == 2 and p[0].strip() == col:
+                alias_col = f"{col}_{p[1].strip().lower()}"
+                break
+        if alias_col:
+            sql += f" ORDER BY {alias_col} {direction}"
+        else:
+            sql += f" ORDER BY {col} {direction}"
+
+    # 限制数量
+    if limit:
+        sql += f" LIMIT {int(limit)}"
+
+    print(f"\n执行SQL: {sql}")
+    result = conn.execute(sql).df()
+
+    print("\n" + "=" * 70)
+    print(f"聚合结果 ({len(result)} 条记录)")
+    print(f"分组字段：{group_by}")
+    print(f"聚合指标：{metrics}")
+    print("=" * 70)
+
+    import pandas as pd
+    pd.set_option('display.max_columns', None)
+    pd.set_option('display.width', None)
+    pd.set_option('display.max_colwidth', 30)
+
+    print(result.to_string(index=False))
+
+    return result.to_dict('records')
+
+
+def action_analyze(analysis_type, target=None):
+    """执行高级分析（DuckDB SQL分析）"""
+    conn = get_con()
+
+    analyses = {
+        "loss": f"""
+            SELECT 
+                {target or '地市区划名称'} as dimension,
+                COUNT(*) as customer_count,
+                SUM(CASE WHEN 对比期收入_万元 > 统计期收入_万元 THEN 1 ELSE 0 END) as decreasing,
+                SUM(CASE WHEN 统计期收入_万元 > 对比期收入_万元 THEN 1 ELSE 0 END) as increasing,
+                SUM(对比期收入_万元 - 统计期收入_万元) as total_decrease
+            FROM postal_customers
+            WHERE 对比期收入_万元 IS NOT NULL AND 统计期收入_万元 IS NOT NULL
+            GROUP BY {target or '地市区划名称'}
+            HAVING total_decrease > 0
+            ORDER BY total_decrease DESC
+        """,
+        "tier": """
+            SELECT 
+                CASE 
+                    WHEN 统计期收入_万元 >= 5 THEN '特级(钻石)'
+                    WHEN 统计期收入_万元 >= 1 THEN '一级(铂金)'
+                    WHEN 统计期收入_万元 >= 0.5 THEN '二级(黄金)'
+                    WHEN 统计期收入_万元 >= 0.1 THEN '三级(白银)'
+                    ELSE '小微'
+                END as customer_tier,
+                COUNT(*) as customer_count,
+                SUM(统计期收入_万元) as total_revenue
+            FROM postal_customers
+            WHERE 统计期收入_万元 IS NOT NULL
+            GROUP BY customer_tier
+            ORDER BY customer_tier
+        """,
+        "top_customers": f"""
+            SELECT 
+                客户名称,
+                行业一级,
+                {target or '地市区划名称'} as region,
+                统计期业务量_万件,
+                统计期收入_万元,
+                (统计期收入_万元 - 对比期收入_万元) as revenue_change
+            FROM postal_customers
+            WHERE 统计期收入_万元 IS NOT NULL
+            ORDER BY 统计期收入_万元 DESC
+            LIMIT 20
+        """,
+    }
+
+    if analysis_type not in analyses:
+        print(f"错误：不支持的分析类型：{analysis_type}")
+        print(f"支持的类型：{', '.join(analyses.keys())}")
         sys.exit(1)
+
+    print(f"\n执行分析: {analysis_type}")
+    print(f"SQL: {analyses[analysis_type]}")
+    result = conn.execute(analyses[analysis_type]).df()
+
+    print("\n" + "=" * 70)
+    print(f"分析结果 ({len(result)} 条记录)")
+    print("=" * 70)
+
+    import pandas as pd
+    pd.set_option('display.max_columns', None)
+    pd.set_option('display.width', None)
+    pd.set_option('display.max_colwidth', 40)
+
+    print(result.to_string(index=False))
+
+    return result.to_dict('records')
 
 
 def main():
     parser = argparse.ArgumentParser(
-        description='邮政商企客户数据查询工具',
+        description='邮政寄递商企客户数据查询工具（DuckDB引擎）',
         formatter_class=argparse.RawDescriptionHelpFormatter
     )
-    
+
     parser.add_argument(
         '--action',
         required=True,
-        choices=['list_columns', 'query', 'aggregate'],
-        help='操作类型：list_columns(查看列), query(查询), aggregate(聚合)'
+        choices=['list_columns', 'query', 'aggregate', 'analyze'],
+        help='操作类型：list_columns(查看列), query(查询), aggregate(聚合), analyze(分析)'
     )
-    
-    parser.add_argument(
-        '--filter',
-        type=str,
-        help='过滤条件 (Python 表达式，例如：省份区划名称=\'江苏省\')'
-    )
-    
-    parser.add_argument(
-        '--columns',
-        type=str,
-        help='查询列 (逗号分隔，例如：客户名称，统计期业务量_万件)'
-    )
-    
-    parser.add_argument(
-        '--group-by',
-        type=str,
-        help='分组字段 (aggregate 模式)'
-    )
-    
-    parser.add_argument(
-        '--metrics',
-        type=str,
-        help='聚合指标 (格式：字段：聚合函数，例如：统计期业务量_万件:sum，统计期收入_万元:avg)'
-    )
-    
-    parser.add_argument(
-        '--order-by',
-        type=str,
-        help='排序 (格式：字段:asc/desc，例如：统计期业务量_万件:desc)'
-    )
-    
-    parser.add_argument(
-        '--limit',
-        type=str,
-        help='返回行数限制'
-    )
-    
-    parser.add_argument(
-        '--export-to',
-        type=str,
-        help='导出文件路径 (.csv 或 .json)'
-    )
-    
+
+    parser.add_argument('--filter', type=str, help='过滤条件 (SQL WHERE子句)')
+    parser.add_argument('--columns', type=str, help='查询列 (逗号分隔)')
+    parser.add_argument('--group-by', type=str, help='分组字段 (aggregate模式)')
+    parser.add_argument('--metrics', type=str, help='聚合指标 (格式：字段:聚合函数)')
+    parser.add_argument('--order-by', type=str, help='排序 (格式：字段:asc/desc)')
+    parser.add_argument('--limit', type=str, help='返回行数限制')
+    parser.add_argument('--export-to', type=str, help='导出文件路径')
+    parser.add_argument('--analysis-type', type=str, help='分析类型 (analyze模式): loss/tier/top_customers')
+    parser.add_argument('--target', type=str, help='分析维度字段 (analyze模式)')
+
     args = parser.parse_args()
-    
-    # 加载数据
-    print(f"正在加载数据：{DATA_FILE}")
-    df = load_data()
-    
-    # 执行操作
+
+    if not DATA_FILE.exists():
+        print(f"错误：数据文件不存在：{DATA_FILE}")
+        sys.exit(1)
+
+    print(f"数据引擎：DuckDB")
+    print(f"数据文件：{DATA_FILE}")
+
     if args.action == 'list_columns':
-        action_list_columns(df)
+        action_list_columns()
     elif args.action == 'query':
         action_query(
-            df,
             filter_expr=args.filter,
             columns=args.columns,
             order_by=args.order_by,
-            limit=args.limit,
+            limit=int(args.limit) if args.limit else None,
             export_to=args.export_to
         )
     elif args.action == 'aggregate':
@@ -319,11 +344,17 @@ def main():
         if not args.metrics:
             parser.error('--metrics 是 aggregate 模式必需的')
         action_aggregate(
-            df,
             group_by=args.group_by,
             metrics=args.metrics,
             order_by=args.order_by,
-            limit=args.limit
+            limit=int(args.limit) if args.limit else None
+        )
+    elif args.action == 'analyze':
+        if not args.analysis_type:
+            parser.error('--analysis-type 是 analyze 模式必需的')
+        action_analyze(
+            analysis_type=args.analysis_type,
+            target=args.target
         )
 
 

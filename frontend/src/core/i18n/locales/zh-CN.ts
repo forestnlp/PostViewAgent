@@ -1,12 +1,11 @@
 import {
-  CompassIcon,
-  GraduationCapIcon,
-  ImageIcon,
-  MicroscopeIcon,
-  PenLineIcon,
-  ShapesIcon,
+  AlertCircleIcon,
+  BarChart3Icon,
+  CrownIcon,
+  FileTextIcon,
   SparklesIcon,
-  VideoIcon,
+  TrendingDownIcon,
+  UsersIcon,
 } from "lucide-react";
 
 import type { Translations } from "./types";
@@ -204,41 +203,41 @@ export const zhCN: Translations = {
     compactFailed: "上下文压缩失败。",
     suggestions: [
       {
-        suggestion: "写作",
-        prompt: "撰写一篇关于[主题]的博客文章",
-        icon: PenLineIcon,
+        suggestion: "智能问数",
+        prompt: "查询武汉市前10名商企客户的业务量排名",
+        icon: BarChart3Icon,
       },
       {
-        suggestion: "研究",
-        prompt: "深入浅出的研究一下[主题]，并总结发现。",
-        icon: MicroscopeIcon,
+        suggestion: "减收分析",
+        prompt: "分析武汉市减收最严重的区县是什么？主要原因是什么？",
+        icon: TrendingDownIcon,
       },
       {
-        suggestion: "收集",
-        prompt: "从[来源]收集数据并创建报告。",
-        icon: ShapesIcon,
+        suggestion: "客户分级",
+        prompt: "查询所有特级大客户的名单，并说明特级大客户的判定标准是什么？",
+        icon: CrownIcon,
       },
       {
-        suggestion: "学习",
-        prompt: "学习关于[主题]并创建教程。",
-        icon: GraduationCapIcon,
+        suggestion: "流失预警",
+        prompt: "找出武汉市收入超过100万的重点客户，并说明VIP客户的分级标准",
+        icon: AlertCircleIcon,
       },
     ],
     suggestionsCreate: [
       {
-        suggestion: "网页",
-        prompt: "生成一个关于[主题]的网页",
-        icon: CompassIcon,
+        suggestion: "战略客户",
+        prompt: "分析武汉市减收客户中，哪些是战略客户？战略客户有哪些管理规则？",
+        icon: UsersIcon,
       },
       {
-        suggestion: "图片",
-        prompt: "生成一个关于[主题]的图片",
-        icon: ImageIcon,
+        suggestion: "商机跟进",
+        prompt: "武汉市商企客户的商机跟进超时规则是什么？哪些客户需要紧急跟进？",
+        icon: AlertCircleIcon,
       },
       {
-        suggestion: "视频",
-        prompt: "生成一个关于[主题]的视频",
-        icon: VideoIcon,
+        suggestion: "分析报告",
+        prompt: "生成武汉市各区县减收情况的分析报告",
+        icon: FileTextIcon,
       },
       {
         type: "separator",
