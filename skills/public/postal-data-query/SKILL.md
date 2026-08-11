@@ -49,6 +49,8 @@ python /mnt/skills/public/postal-data-query/scripts/query_data.py \
 
 ### 步骤 3: 进行数据分析
 
+**重要：--aggregate 命令必须配合 --filter 使用筛选条件！**
+
 #### 查询所有列
 
 ```bash
@@ -65,20 +67,23 @@ python /mnt/skills/public/postal-data-query/scripts/query_data.py \
   --columns "地市区划名称，统计期业务量_万件，统计期收入_万元"
 ```
 
-#### 按行业统计
+#### 按行业统计（带筛选）
 
 ```bash
+# 正确：aggregate必须配合filter传递筛选条件
 python /mnt/skills/public/postal-data-query/scripts/query_data.py \
   --action aggregate \
+  --filter "月份 = '2026-06' AND 地市区划名称 = '武汉市'" \
   --group-by "行业一级" \
   --metrics "统计期业务量_万件:sum,统计期收入_万元:sum"
 ```
 
-#### 按区域汇总
+#### 按区域汇总（带筛选）
 
 ```bash
 python /mnt/skills/public/postal-data-query/scripts/query_data.py \
   --action aggregate \
+  --filter "月份 = '2026-07'" \
   --group-by "地市区划名称" \
   --metrics "统计期业务量_万件:sum,统计期收入_万元:sum" \
   --order-by "统计期业务量_万件:desc" \
@@ -242,6 +247,7 @@ python /mnt/skills/public/postal-data-query/scripts/query_data.py \
 - **对比期是去年同期数据（同比），不是上个月（环比）**
   - 统计期收入_万元 vs 对比期收入_万元 = 同比变化
   - 不要理解为环比变化（上个月）
+- **--aggregate 命令必须配合 --filter！** 如果查询条件是"武汉市2026年6月铂金客户"，那么 aggregate 命令也必须加上相同的 filter 条件
 - 数据为预计算的静态数据，不包含实时更新
 - 业务量单位为"万件"，收入单位为"万元"，重量单位为"kg"
 - 过滤条件使用 SQL WHERE 子句语法（DuckDB）
