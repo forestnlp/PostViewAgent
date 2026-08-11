@@ -162,7 +162,7 @@ def action_query(filter_expr=None, columns=None, order_by=None, limit=None, expo
     return result.to_dict('records')
 
 
-def action_aggregate(group_by, metrics, order_by=None, limit=None):
+def action_aggregate(group_by, metrics, filter_expr=None, order_by=None, limit=None):
     """执行聚合查询（SQL GROUP BY）"""
     conn = get_con()
 
@@ -186,8 +186,13 @@ def action_aggregate(group_by, metrics, order_by=None, limit=None):
     sql = f"""
         SELECT {group_by}, {', '.join(agg_parts)}
         FROM postal_customers
-        GROUP BY {group_by}
     """
+    
+    # 添加WHERE子句（支持筛选）
+    if filter_expr:
+        sql += f"\n        WHERE {filter_expr}"
+    
+    sql += f"\n        GROUP BY {group_by}"
 
     # 排序
     if order_by:
@@ -351,6 +356,7 @@ def main():
         action_aggregate(
             group_by=args.group_by,
             metrics=args.metrics,
+            filter_expr=args.filter,
             order_by=args.order_by,
             limit=int(args.limit) if args.limit else None
         )
