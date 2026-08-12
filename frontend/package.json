@@ -64,6 +64,8 @@
     "date-fns": "^4.1.0",
     "defu": "6.1.5",
     "dotenv": "^17.2.3",
+    "echarts": "^6.1.0",
+    "echarts-for-react": "^3.0.6",
     "embla-carousel-react": "^8.6.0",
     "gsap": "^3.13.0",
     "h3": "1.15.9",

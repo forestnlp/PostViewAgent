@@ -26,6 +26,8 @@ import {
 } from "@/core/streamdown/components";
 import { cn } from "@/lib/utils";
 
+import { EChartsBlock } from "@/components/ai-elements/echarts-block";
+
 import { createMarkdownLinkComponent } from "./markdown-link";
 
 export type MarkdownContentProps = {
@@ -161,12 +163,28 @@ function useSmoothStreamingContent(content: string, isLoading: boolean) {
   };
 }
 
+function getCodeBlockText(children: ReactNode): string {
+  if (typeof children === "string") {
+    return children;
+  }
+  if (isValidElement(children)) {
+    return getCodeBlockText((children.props as { children?: ReactNode }).children);
+  }
+  return "";
+}
+
 function StreamingPre({ children }: ComponentProps<"pre">) {
   const childClassName = isValidElement<{ className?: string }>(children)
     ? children.props.className
     : undefined;
   const language =
     /(?:^|\s)language-([^\s]+)/.exec(childClassName ?? "")?.[1] ?? "";
+
+  // Render `echarts` fenced code blocks as interactive charts instead of
+  // showing the raw option JSON.
+  if (language === "echarts") {
+    return <EChartsBlock code={getCodeBlockText(children)} />;
+  }
 
   return (
     <div
@@ -229,11 +247,8 @@ export function MarkdownContent({
 }: MarkdownContentProps) {
   const deferredContent = useDeferredValue(content);
   const targetContent = isLoading ? deferredContent : content;
-  const { content: displayContent, isRevealing } = useSmoothStreamingContent(
-    targetContent,
-    isLoading,
-  );
-  const isStreamingRender = isLoading || isRevealing;
+  const { content: displayContent, isRevealing: _isRevealing } =
+    useSmoothStreamingContent(targetContent, isLoading);
   const normalizedContent = useMemo(
     () => preprocessStreamdownMarkdown(displayContent),
     [displayContent],
@@ -248,15 +263,12 @@ export function MarkdownContent({
       a: createMarkdownLinkComponent(),
       ...componentsFromProps,
     };
-    if (!isStreamingRender) {
-      return baseComponents;
-    }
     return {
       ...baseComponents,
       code: componentsFromProps?.code ?? StreamingCode,
       pre: componentsFromProps?.pre ?? StreamingPre,
     };
-  }, [componentsFromProps, isStreamingRender]);
+  }, [componentsFromProps]);
 
   if (!displayContent) return null;
 
