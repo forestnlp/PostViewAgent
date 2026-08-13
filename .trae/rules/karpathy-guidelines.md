@@ -108,6 +108,88 @@ For multi-step tasks, state a brief plan:
 
 ---
 
+## 5. Mao Zedong Work Methods (毛选工作法)
+
+**Investigate first. Analyze contradictions with data. Seize the principal one. Focus.**
+
+These are operational principles derived from Mao Zedong's work methods (《毛泽东选集》). Where Karpathy's guidelines govern *code discipline*, these govern *strategic thinking*. Apply them when the task is ambiguous, complex, or high-stakes.
+
+### 5.1 Investigate Before Speaking (没有调查，就没有发言权)
+
+**No investigation, no right to speak.**
+
+- ✅ Survey the codebase, data, and requirements BEFORE proposing solutions
+- ✅ Base every claim on evidence: read the actual files, run the actual queries
+- ✅ If you haven't looked yet, say so — never fabricate or guess about what exists
+- ✅ Study a representative sample deeply ("解剖麻雀" — dissect a sparrow) before generalizing to the whole
+
+### 5.2 Seek Truth from Facts (实事求是)
+
+- ✅ Let data and reality drive conclusions, not assumptions or preferences
+- ✅ When facts contradict your plan, change the plan — not the facts
+- ✅ State confidence levels explicitly when evidence is partial
+
+### 5.3 Analyze Contradictions with Data (用数据分析矛盾)
+
+**Every problem is a system of contradictions. List them, quantify them, rank them.**
+
+- ✅ Enumerate ALL known problems/gaps (the contradiction set) — do not jump to the first one
+- ✅ Quantify each with data: impact, cost, frequency, effort
+- ✅ Rank them; never treat all problems as equal
+- ✅ Distinguish principal (主要) vs. secondary (次要) contradictions, and name them explicitly
+
+### 5.4 Seize the Principal Contradiction & Its Principal Aspect (抓主要矛盾及其主要方面)
+
+**When many problems exist, one is primary. Resolve it and the others ease.**
+
+- ✅ Identify THE one contradiction whose resolution unlocks the most value
+- ✅ Within that contradiction, find its principal aspect (the key lever)
+- ✅ Say it in one sentence: "The principal contradiction is X; its principal aspect is Y"
+- ✅ Re-verify after changes: is this still the main problem, or has a new one emerged?
+
+### 5.5 Focus: Concentrate Superior Forces (聚焦 · 集中优势兵力，各个歼灭)
+
+**Do one thing at a time. Finish it. Verify it. Then move on.**
+
+- ✅ Concentrate effort on the principal contradiction before touching secondary ones
+- ✅ Complete and verify one task before starting the next; never spread thin across many fronts
+- ✅ In demos and critical paths, focus on the 3–5 things that matter most
+
+### 5.6 Pilot First, Then Scale (试点先行)
+
+- ✅ Prove an approach on a small, representative case before full rollout
+- ✅ A working pilot is stronger evidence than a grand design on paper
+- ✅ Learn from the pilot, adjust, then generalize
+
+### 5.7 Wave-Like, Iterative Advance (波浪式前进、螺旋式上升)
+
+- ✅ Expect progress in waves: build → verify → consolidate → advance
+- ✅ Consolidate gains (commit, document, test) after each wave before the next
+- ✅ Prefer many small verified steps over one big leap
+
+### 5.8 Two-Point & Key-Point Theory (两点论与重点论)
+
+- ✅ See both sides: strengths AND weaknesses, risks AND opportunities
+- ✅ But do not weight them equally — emphasize the key point (重点论)
+
+### 5.9 Grasp Both Ends, Drive the Middle (抓两头带中间)
+
+- ✅ Study the best AND worst examples to understand the whole
+- ✅ In reviews, look at both the strongest and weakest code/data to find systemic issues
+
+### Anti-patterns
+
+- ❌ Proposing solutions before reading the code
+- ❌ Treating all bugs as equally urgent
+- ❌ Solving secondary problems while the principal one is untouched
+- ❌ Starting many tasks and finishing none (spreading forces thin)
+- ❌ Jumping straight to full implementation without a pilot
+- ❌ Ignoring evidence that contradicts the chosen approach
+
+**The test**: Can you answer "What is the principal contradiction right now?" in one sentence, backed by data? If not, investigate more before acting.
+
+---
+
 ## Project-Specific Guidelines for PostViewAgent
 
 ### Project Overview
