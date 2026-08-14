@@ -6,7 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import { cn } from "@/lib/utils";
 
-type CategoryKey = "industry" | "team" | "manager" | "customer";
+type CategoryKey = "industry" | "team" | "servicePoint" | "manager" | "customer";
 
 interface GraphNode {
   id: string;
@@ -16,9 +16,13 @@ interface GraphNode {
   value: number;
   customerCount?: number;
   industry?: string;
+  industryDetail?: string;  // 二级行业
+  businessScenario?: string;  // 业务场景
+  level?: string;  // 客户等级
   team?: string;
   manager?: string;
-  leader?: string;
+  servicePoint?: string;
+  revenue?: number;
 }
 
 interface GraphLink {
@@ -60,11 +64,14 @@ function fmtRevenue(v: number | undefined | null): string {
   return `${v.toLocaleString("zh-CN", { maximumFractionDigits: 1 })}万`;
 }
 
-// 气泡大小：收入做开方缩放，避免头部节点过大
+// 节点大小：收入做开方缩放
 function nodeSymbolSize(value: number, category: string): number {
   if (category === "industry") return 50;
   if (category === "team") {
     return Math.max(22, Math.min(52, 20 + Math.sqrt(value) * 2));
+  }
+  if (category === "servicePoint") {
+    return Math.max(20, Math.min(40, 18 + Math.sqrt(value) * 1.5));
   }
   if (category === "customer") {
     return Math.max(6, Math.min(16, 5 + Math.sqrt(value) * 0.5));
@@ -74,44 +81,49 @@ function nodeSymbolSize(value: number, category: string): number {
 
 export function KnowledgeGraph() {
   const [data, setData] = useState<GraphData | null>(null);
+  const [stats, setStats] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [activeIndustry, setActiveIndustry] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [drill, setDrill] = useState<DrillState | null>(null);
 
   useEffect(() => {
-    fetch("/api/knowledge-graph/industries")
-      .then((r) => {
-        if (!r.ok) throw new Error(`HTTP ${r.status}`);
-        return r.json();
-      })
-      .then((industries: Array<{ id: number; name: string; revenue: number; customer_count: number; manager_count: number }>) => {
-        console.log('【知识图谱】加载行业数据:', industries);
-        // 转换数据格式
-        const nodes: GraphNode[] = industries.map((ind) => ({
-          id: `industry:${ind.name}`,
-          name: ind.name,
-          category: "industry",
-          categoryIndex: 0,  // 对应 categories[0]
-          value: ind.revenue,
-          customerCount: ind.customer_count,
-        }));
+    // 并行加载行业数据和统计信息
+    Promise.all([
+      fetch("/api/knowledge-graph/industries").then(r => r.json()),
+      fetch("/api/knowledge-graph/stats/summary").then(r => r.json())
+    ]).then(([industries, statsData]) => {
+      console.log('【知识图谱】加载行业数据:', industries);
+      console.log('【知识图谱】加载统计数据:', statsData);
+      
+      // 转换数据格式
+      const nodes: GraphNode[] = industries.map((ind: any) => ({
+        id: `industry:${ind.name}`,
+        name: ind.name,
+        category: "industry",
+        categoryIndex: 0,
+        value: ind.revenue,
+        customerCount: ind.customer_count,
+        revenue: ind.revenue,
+      }));
 
-        console.log('【知识图谱】创建节点:', nodes);
-        setData({
-          categories: [
-            { name: "行业", key: "industry" },
-            { name: "客户经理", key: "manager" },
-            { name: "客户", key: "customer" },
-          ],
-          nodes,
-          links: [],
-        });
-      })
-      .catch((e) => {
-        console.error('【知识图谱】加载失败:', e);
-        setError(e instanceof Error ? e.message : "加载失败");
+      console.log('【知识图谱】创建节点:', nodes);
+      setData({
+        categories: [
+          { name: "行业", key: "industry" },
+          { name: "团队", key: "team" },
+          { name: "服务网点", key: "servicePoint" },
+          { name: "客户经理", key: "manager" },
+          { name: "客户", key: "customer" },
+        ],
+        nodes,
+        links: [],
       });
+      setStats(statsData);
+    }).catch((e) => {
+      console.error('【知识图谱】加载失败:', e);
+      setError(e instanceof Error ? e.message : "加载失败");
+    });
   }, []);
 
   const industries = useMemo(() => {
@@ -151,43 +163,52 @@ export function KnowledgeGraph() {
   const handleIndustryClick = async (industryName: string) => {
     setActiveIndustry(industryName);
     try {
-      const res = await fetch(`/api/knowledge-graph/industries/${encodeURIComponent(industryName)}/managers`);
-      if (!res.ok) throw new Error("加载失败");
-      const managers = await res.json();
+      // 并行加载经理和客户
+      const [managersRes, customersRes] = await Promise.all([
+        fetch(`/api/knowledge-graph/industries/${encodeURIComponent(industryName)}/managers`),
+        fetch(`/api/knowledge-graph/industries/${encodeURIComponent(industryName)}/customers?limit=100`)
+      ]);
+      
+      if (!managersRes.ok || !customersRes.ok) throw new Error("加载失败");
+      
+      const [managers, customers] = await Promise.all([
+        managersRes.json(),
+        customersRes.json()
+      ]);
 
       if (!data) return;
 
-      // 检查是否已经加载过该行业的经理
-      const industryManagerIds = managers.map((m: any) => `manager:${m.name}`);
-      const existingManagerIds = new Set(data.nodes.filter((n) => industryManagerIds.includes(n.id)).map((n) => n.id));
-      
-      // 只添加新经理
+      // 添加经理节点
       const newManagerNodes: GraphNode[] = managers
-        .filter((m: any) => !existingManagerIds.has(`manager:${m.name}`))
+        .filter((m: any) => !data.nodes.some((n) => n.id === `manager:${m.name}`))
         .map((m: any) => ({
           id: `manager:${m.name}`,
           name: m.name,
           category: "manager",
-          categoryIndex: 1,  // 对应 categories[1]
+          categoryIndex: 3,
           value: m.revenue,
           customerCount: m.customer_count,
-          industry: m.industry_name,
+          industry: m.industry_detail,
           team: m.teams?.[0] || undefined,
+          revenue: m.revenue,
         }));
 
-      // 添加客户节点
-      const custRes = await fetch(`/api/knowledge-graph/industries/${encodeURIComponent(industryName)}/customers`);
-      const customers = await custRes.json();
+      // 添加客户节点（包含更多属性）
       const newCustomerNodes: GraphNode[] = customers
         .filter((c: any) => !data.nodes.some((n) => n.id === `customer:${c.name}`))
         .map((c: any) => ({
           id: `customer:${c.name}`,
           name: c.name,
           category: "customer",
-          categoryIndex: 2,  // 对应 categories[2]
+          categoryIndex: 4,
           value: c.revenue,
-          industry: c.industry_name,
+          industry: c.industry_detail,
+          industryDetail: c.industry_detail,
+          businessScenario: c.business_scenario,
+          level: c.level,
           manager: c.managers?.[0],
+          servicePoint: c.service_point,
+          revenue: c.revenue,
         }));
 
       // 构建新边（避免重复）
@@ -232,22 +253,37 @@ export function KnowledgeGraph() {
         const node = params.data.data as GraphNode;
         let content = `<b>${node.name}</b><br/>`;
         content += `类型：${node.category}<br/>`;
-        content += `收入：${fmtRevenue(node.value)}<br/>`;
+        content += `收入：${fmtRevenue(node.revenue || node.value)}<br/>`;
         if (node.customerCount) {
           content += `客户数：${node.customerCount}<br/>`;
         }
         if (node.industry) {
           content += `行业：${node.industry}<br/>`;
         }
+        if (node.industryDetail) {
+          content += `细分行业：${node.industryDetail}<br/>`;
+        }
+        if (node.businessScenario) {
+          content += `业务场景：${node.businessScenario}<br/>`;
+        }
+        if (node.level) {
+          content += `客户等级：${node.level}<br/>`;
+        }
         if (node.team) {
           content += `团队：${node.team}<br/>`;
+        }
+        if (node.servicePoint) {
+          content += `服务网点：${node.servicePoint}<br/>`;
+        }
+        if (node.manager) {
+          content += `经理：${node.manager}<br/>`;
         }
         return content;
       },
     },
     legend: {
       show: true,
-      data: ["行业", "客户经理", "客户"],
+      data: ["行业", "团队", "服务网点", "客户经理", "客户"],
       top: 10,
     },
     series: [
@@ -258,6 +294,8 @@ export function KnowledgeGraph() {
         links: filteredData?.links || [],
         categories: [
           { name: "行业", symbol: "circle", itemStyle: { color: "#0b9444" } },
+          { name: "团队", symbol: "circle", itemStyle: { color: "#7c3aed" } },
+          { name: "服务网点", symbol: "circle", itemStyle: { color: "#0891b2" } },
           { name: "客户经理", symbol: "circle", itemStyle: { color: "#2563eb" } },
           { name: "客户", symbol: "circle", itemStyle: { color: "#f97316" } },
         ],
@@ -295,9 +333,15 @@ export function KnowledgeGraph() {
           const node = params.data as GraphNode;
           if (node.categoryIndex === 0) return 50;  // 行业
           if (node.categoryIndex === 1) {
-            return Math.max(15, Math.min(35, 15 + Math.sqrt(node.value) * 0.5));  // 经理
+            return Math.max(22, Math.min(52, 20 + Math.sqrt(node.value) * 2));  // 团队
           }
           if (node.categoryIndex === 2) {
+            return Math.max(20, Math.min(40, 18 + Math.sqrt(node.value) * 1.5));  // 服务网点
+          }
+          if (node.categoryIndex === 3) {
+            return Math.max(15, Math.min(35, 15 + Math.sqrt(node.value) * 0.5));  // 经理
+          }
+          if (node.categoryIndex === 4) {
             return Math.max(6, Math.min(14, 6 + Math.sqrt(node.value) * 0.3));  // 客户
           }
           return 10;
@@ -307,7 +351,7 @@ export function KnowledgeGraph() {
             if (!params || !params.data) return FALLBACK_COLOR;
             const node = params.data as GraphNode;
             // 使用 categoryIndex 匹配 colors 数组
-            const colors = ["#0b9444", "#2563eb", "#f97316"];  // 行业、经理、客户
+            const colors = ["#0b9444", "#7c3aed", "#0891b2", "#2563eb", "#f97316"];  // 行业、团队、服务网点、经理、客户
             if (node.categoryIndex >= 0 && node.categoryIndex < colors.length) {
               return colors[node.categoryIndex];
             }
@@ -418,6 +462,11 @@ export function KnowledgeGraph() {
       <div className="shrink-0 text-sm text-muted-foreground">
         节点：{filteredData.nodes.length} 个 | 关系：{filteredData.links.length} 条
         {activeIndustry && ` | 当前：${activeIndustry}`}
+        {stats && (
+          <span className="ml-4">
+            | 总客户：{stats.customer_count} | 总经理：{stats.manager_count} | 总行业：{stats.industry_count} | 总服务网点：{stats.service_point_count}
+          </span>
+        )}
       </div>
     </div>
   );
