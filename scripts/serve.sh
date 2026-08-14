@@ -105,13 +105,18 @@ _is_deerflow_pid() {
         return 0
     fi
 
-    files=$(lsof -b -w -p "$pid" 2>/dev/null) || return 1
-    while IFS= read -r root; do
-        [ -n "$root" ] || continue
-        case "$files" in
-            *"$root"/*) return 0 ;;
-        esac
-    done <<< "$DEERFLOW_ROOTS"
+    # Use /proc/$pid/cwd instead of lsof to avoid hanging on zombie/blocked processes
+    # This is more reliable and doesn't require external tools
+    if [ -d "/proc/$pid/cwd" ]; then
+        local cwd
+        cwd=$(readlink -f "/proc/$pid/cwd" 2>/dev/null) || return 1
+        while IFS= read -r root; do
+            [ -n "$root" ] || continue
+            case "$cwd" in
+                "$root"/*|"$root") return 0 ;;
+            esac
+        done <<< "$DEERFLOW_ROOTS"
+    fi
     return 1
 }
 
