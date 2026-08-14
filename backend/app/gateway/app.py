@@ -26,6 +26,7 @@ from app.gateway.routers import (
     github_webhooks,
     input_polish,
     integrations,
+    knowledge_graph,
     mcp,
     memory,
     models,
@@ -579,6 +580,9 @@ This gateway provides runtime endpoints for agent runs plus custom endpoints for
 
     # First-party integrations API is mounted at /api/integrations
     app.include_router(integrations.router)
+
+    # Knowledge Graph API is mounted at /api/knowledge-graph
+    app.include_router(knowledge_graph.router)
 
     # Artifacts API is mounted at /api/threads/{thread_id}/artifacts
     app.include_router(artifacts.router)

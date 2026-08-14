@@ -1,6 +1,6 @@
 "use client";
 
-import { BookOpenIcon, MessagesSquare } from "lucide-react";
+import { BookOpenIcon, MessagesSquare, Network } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -34,6 +34,17 @@ export function WorkspaceNavChatList() {
             <Link className="text-muted-foreground" href="/workspace/rules">
               <BookOpenIcon />
               <span>业务规则</span>
+            </Link>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+        <SidebarMenuItem>
+          <SidebarMenuButton
+            isActive={pathname.startsWith("/workspace/knowledge-graph")}
+            asChild
+          >
+            <Link className="text-muted-foreground" href="/workspace/knowledge-graph">
+              <Network />
+              <span>客户关系图谱</span>
             </Link>
           </SidebarMenuButton>
         </SidebarMenuItem>
