@@ -1,7 +1,8 @@
 """
-知识图谱 API 接口 (Neo4j 版本)
+知识图谱 API 接口 (Neo4j 版本 - 重构版)
 
-提供行业、经理、客户、服务网点数据的查询接口
+基于干净的 CSV 数据导入的 Neo4j 知识图谱
+数据层级：行业 -> 经理 -> 客户
 """
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
@@ -35,321 +36,222 @@ class Industry(BaseModel):
     manager_count: Optional[int] = 0
 
 
-class Team(BaseModel):
-    name: str
-    team_type: Optional[str]
-    org: Optional[str]
-    revenue: float
-    manager_count: Optional[int] = 0
-    customer_count: Optional[int] = 0
-
-
-class ServicePoint(BaseModel):
-    name: str
-    code: Optional[str]
-    region: Optional[str]
-    revenue: float
-    customer_count: Optional[int] = 0
-
-
 class Manager(BaseModel):
     name: str
-    code: Optional[str]
     revenue: float
-    customer_count: Optional[int] = 0
-    teams: List[str] = []
-    industry_detail: Optional[str] = None
+    customer_count: int
+    teams: Optional[List[str]] = []
+    org: Optional[str] = None
 
 
 class Customer(BaseModel):
     name: str
-    level: Optional[str]
     revenue: float
-    industry_detail: Optional[str]
-    business_scenario: Optional[str]
-    managers: List[str] = []
+    level: str
+    industry2: Optional[str] = None
+    industry3: Optional[str] = None
+    managers: Optional[List[str]] = []
+    teams: Optional[List[str]] = []
     service_point: Optional[str] = None
 
 
 # === API 接口 ===
 
 @router.get("/industries", response_model=List[Industry])
-async def list_industries():
-    """获取所有行业"""
+def list_industries():
+    """获取所有行业列表（按二级行业）"""
     cypher = """
-        MATCH (i:Industry)
-        RETURN i.name as name, 
-               i.revenue as revenue,
-               i.customer_count as customer_count,
-               i.manager_count as manager_count
-        ORDER BY i.revenue DESC
+    MATCH (c:Customer)-[:IN_INDUSTRY]->(i:Industry {level: 2})
+    RETURN 
+        i.name as name,
+        sum(c.revenue) as revenue,
+        count(DISTINCT c) as customer_count
+    ORDER BY revenue DESC
     """
-    results = get_neo4j_result(cypher)
-    return [Industry(**r) for r in results]
+    result = get_neo4j_result(cypher)
+    
+    industries = []
+    for r in result:
+        # 查询该行业下的经理数
+        industry_name = r['name']
+        mgr_cypher = """
+        MATCH (i:Industry {name: $name})<-[:IN_INDUSTRY]-(c:Customer)-[:ASSIGNED_TO]->(m:Manager)
+        RETURN count(DISTINCT m) as count
+        """
+        mgr_result = get_neo4j_result(mgr_cypher, {"name": industry_name})
+        mgr_count = mgr_result[0]['count'] if mgr_result else 0
+        
+        industries.append(Industry(
+            name=r['name'],
+            revenue=round(r['revenue'] or 0, 2),
+            customer_count=r['customer_count'] or 0,
+            manager_count=mgr_count
+        ))
+    
+    return industries
 
 
 @router.get("/industries/{industry_name}/managers", response_model=List[Manager])
-async def get_industry_managers(industry_name: str):
-    """获取某行业下的所有经理"""
+def list_industry_managers(industry_name: str):
+    """获取指定行业下的所有经理"""
     cypher = """
-        MATCH (i:Industry {name: $industry_name})<-[:BELONGS_TO]-(c:Customer)<-[:RESPONSIBLE_FOR]-(m:Manager)
-        WITH DISTINCT m, i
-        OPTIONAL MATCH (m)-[:MEMBER_OF]->(t:Team)
-        RETURN m.name as name,
-               m.code as code,
-               m.revenue as revenue,
-               m.customer_count as customer_count,
-               collect(DISTINCT t.name) as teams,
-               i.name as industry_detail
-        ORDER BY m.revenue DESC
+    MATCH (i:Industry {name: $name})<-[:IN_INDUSTRY]-(c:Customer)-[:ASSIGNED_TO]->(m:Manager)
+    RETURN 
+        m.name as name,
+        m.org as org,
+        sum(c.revenue) as revenue,
+        count(DISTINCT c) as customer_count
+    ORDER BY revenue DESC
     """
-    results = get_neo4j_result(cypher, {"industry_name": industry_name})
-    return [Manager(**r) for r in results]
+    result = get_neo4j_result(cypher, {"name": industry_name})
+    
+    managers = []
+    for r in result:
+        # 查询经理所属团队
+        team_cypher = """
+        MATCH (m:Manager {name: $mgr_name})<-[:ASSIGNED_TO]-(c:Customer)-[:BELONGS_TO]->(t:Team)
+        RETURN DISTINCT t.name as team
+        """
+        team_result = get_neo4j_result(team_cypher, {"mgr_name": r['name']})
+        teams = [t['team'] for t in team_result if t['team']]
+        
+        managers.append(Manager(
+            name=r['name'],
+            revenue=round(r['revenue'] or 0, 2),
+            customer_count=r['customer_count'] or 0,
+            teams=teams,
+            org=r.get('org')
+        ))
+    
+    return managers
 
 
 @router.get("/industries/{industry_name}/customers", response_model=List[Customer])
-async def get_industry_customers(industry_name: str, limit: int = 100):
-    """获取某行业下的所有客户"""
+def list_industry_customers(industry_name: str):
+    """获取指定行业下的所有客户"""
     cypher = """
-        MATCH (i:Industry {name: $industry_name})<-[:BELONGS_TO]-(c:Customer)<-[:RESPONSIBLE_FOR]-(m:Manager)
-        OPTIONAL MATCH (c)-[:SERVED_BY]->(s:ServicePoint)
-        WITH c, m, s
-        ORDER BY c.revenue DESC
-        LIMIT $limit
-        RETURN c.name as name,
-               c.level as level,
-               c.revenue as revenue,
-               c.industry_detail as industry_detail,
-               c.business_scenario as business_scenario,
-               collect(DISTINCT m.name) as managers,
-               collect(DISTINCT s.name)[0] as service_point
+    MATCH (i:Industry {name: $name})<-[:IN_INDUSTRY]-(c:Customer)
+    OPTIONAL MATCH (c)-[:ASSIGNED_TO]->(m:Manager)
+    OPTIONAL MATCH (c)-[:BELONGS_TO]->(t:Team)
+    OPTIONAL MATCH (c)-[:SERVED_BY]->(sp:ServicePoint)
+    RETURN 
+        c.name as name,
+        c.revenue as revenue,
+        c.level as level,
+        c.industry3 as industry3,
+        collect(DISTINCT m.name) as managers,
+        collect(DISTINCT t.name) as teams,
+        collect(DISTINCT sp.name) as service_points
+    ORDER BY c.revenue DESC
     """
-    results = get_neo4j_result(cypher, {"industry_name": industry_name, "limit": limit})
-    return [Customer(**r) for r in results]
-
-
-@router.get("/managers/{manager_name}", response_model=Manager)
-async def get_manager_detail(manager_name: str):
-    """获取经理详情"""
-    cypher = """
-        MATCH (m:Manager {name: $manager_name})
-        OPTIONAL MATCH (m)-[:MEMBER_OF]->(t:Team)
-        RETURN m.name as name,
-               m.code as code,
-               m.revenue as revenue,
-               m.customer_count as customer_count,
-               collect(DISTINCT t.name) as teams
-    """
-    result = get_neo4j_result(cypher, {"manager_name": manager_name})
-    if not result:
-        raise HTTPException(status_code=404, detail="经理不存在")
-    return Manager(**result[0])
+    result = get_neo4j_result(cypher, {"name": industry_name})
+    
+    customers = []
+    for r in result:
+        # 处理服务网点（取第一个非空的）
+        service_points = [sp for sp in r['service_points'] if sp]
+        service_point = service_points[0] if service_points else None
+        
+        customers.append(Customer(
+            name=r['name'],
+            revenue=round(r['revenue'] or 0, 2),
+            level=r['level'] or '普通',
+            industry2=industry_name,
+            industry3=r['industry3'],
+            managers=[m for m in r['managers'] if m],
+            teams=[t for t in r['teams'] if t],
+            service_point=service_point
+        ))
+    
+    return customers
 
 
 @router.get("/managers/{manager_name}/customers", response_model=List[Customer])
-async def get_manager_customers(manager_name: str, limit: int = 100):
-    """获取经理负责的客户"""
+def list_manager_customers(manager_name: str):
+    """获取指定经理负责的所有客户"""
     cypher = """
-        MATCH (m:Manager {name: $manager_name})-[:RESPONSIBLE_FOR]->(c:Customer)
-        OPTIONAL MATCH (c)-[:SERVED_BY]->(s:ServicePoint)
-        ORDER BY c.revenue DESC
-        LIMIT $limit
-        RETURN c.name as name,
-               c.level as level,
-               c.revenue as revenue,
-               c.industry_detail as industry_detail,
-               c.business_scenario as business_scenario,
-               collect(DISTINCT s.name)[0] as service_point
+    MATCH (m:Manager {name: $name})<-[:ASSIGNED_TO]-(c:Customer)-[:IN_INDUSTRY]->(i:Industry)
+    OPTIONAL MATCH (c)-[:BELONGS_TO]->(t:Team)
+    RETURN 
+        c.name as name,
+        c.revenue as revenue,
+        c.level as level,
+        i.name as industry2,
+        c.industry3 as industry3,
+        collect(DISTINCT t.name) as teams
+    ORDER BY c.revenue DESC
     """
-    results = get_neo4j_result(cypher, {"manager_name": manager_name, "limit": limit})
-    return [Customer(**r) for r in results]
-
-
-@router.get("/customers/search", response_model=List[Customer])
-async def search_customers(q: str, limit: int = 50):
-    """搜索客户"""
-    cypher = """
-        MATCH (c:Customer)
-        WHERE c.name CONTAINS $q
-        OPTIONAL MATCH (c)<-[:RESPONSIBLE_FOR]-(m:Manager)
-        OPTIONAL MATCH (c)-[:SERVED_BY]->(s:ServicePoint)
-        ORDER BY c.revenue DESC
-        LIMIT $limit
-        RETURN c.name as name,
-               c.level as level,
-               c.revenue as revenue,
-               c.industry_detail as industry_detail,
-               c.business_scenario as business_scenario,
-               collect(DISTINCT m.name) as managers,
-               collect(DISTINCT s.name)[0] as service_point
-    """
-    results = get_neo4j_result(cypher, {"q": q, "limit": limit})
-    return [Customer(**r) for r in results]
-
-
-@router.get("/teams", response_model=List[Team])
-async def list_teams():
-    """获取所有团队"""
-    cypher = """
-        MATCH (t:Team)
-        RETURN t.name as name,
-               t.team_type as team_type,
-               t.org as org,
-               t.revenue as revenue,
-               t.manager_count as manager_count,
-               t.customer_count as customer_count
-        ORDER BY t.revenue DESC
-    """
-    results = get_neo4j_result(cypher)
-    return [Team(**r) for r in results]
-
-
-@router.get("/service-points", response_model=List[ServicePoint])
-async def list_service_points():
-    """获取所有服务网点"""
-    cypher = """
-        MATCH (s:ServicePoint)
-        RETURN s.name as name,
-               s.code as code,
-               s.region as region,
-               s.revenue as revenue,
-               s.customer_count as customer_count
-        ORDER BY s.revenue DESC
-    """
-    results = get_neo4j_result(cypher)
-    return [ServicePoint(**r) for r in results]
-
-
-@router.get("/service-points/{region}", response_model=List[ServicePoint])
-async def get_service_points_by_region(region: str):
-    """获取某区域的所有服务网点"""
-    cypher = """
-        MATCH (s:ServicePoint {region: $region})
-        RETURN s.name as name,
-               s.code as code,
-               s.region as region,
-               s.revenue as revenue,
-               s.customer_count as customer_count
-        ORDER BY s.revenue DESC
-    """
-    results = get_neo4j_result(cypher, {"region": region})
-    return [ServicePoint(**r) for r in results]
-
-
-@router.get("/stats/summary")
-async def get_summary_stats():
-    """获取统计摘要"""
-    cypher = """
-        MATCH (c:Customer)
-        WITH count(c) as customer_count, sum(c.revenue) as total_revenue
-        OPTIONAL MATCH (m:Manager)
-        WITH customer_count, total_revenue, count(m) as manager_count
-        OPTIONAL MATCH (i:Industry)
-        WITH customer_count, total_revenue, manager_count, count(i) as industry_count
-        OPTIONAL MATCH (t:Team)
-        WITH customer_count, total_revenue, manager_count, industry_count, count(t) as team_count
-        OPTIONAL MATCH (s:ServicePoint)
-        WITH customer_count, total_revenue, manager_count, industry_count, team_count, count(s) as service_point_count
-        RETURN {
-            customer_count: customer_count,
-            manager_count: manager_count,
-            industry_count: industry_count,
-            team_count: team_count,
-            service_point_count: service_point_count,
-            total_revenue: total_revenue
-        } as stats
-    """
-    result = get_neo4j_result(cypher)
-    return result[0]['stats'] if result else {}
-
-
-@router.get("/industries/detail")
-async def get_industries_detail():
-    """获取行业详细统计（按一级行业分类）"""
-    cypher = """
-        MATCH (i:Industry)
-        RETURN i.category as category,
-               count(DISTINCT i) as industry_count,
-               sum(i.customer_count) as total_customers,
-               sum(i.revenue) as total_revenue
-        ORDER BY total_revenue DESC
-    """
-    results = get_neo4j_result(cypher)
-    return results
-
-
-@router.get("/customers/by-level")
-async def get_customers_by_level():
-    """按客户等级统计"""
-    cypher = """
-        MATCH (c:Customer)
-        RETURN c.level as level,
-               count(c) as customer_count,
-               sum(c.revenue) as total_revenue
-        ORDER BY total_revenue DESC
-    """
-    results = get_neo4j_result(cypher)
-    return results
+    result = get_neo4j_result(cypher, {"name": manager_name})
+    
+    customers = []
+    for r in result:
+        customers.append(Customer(
+            name=r['name'],
+            revenue=round(r['revenue'] or 0, 2),
+            level=r['level'] or '普通',
+            industry2=r['industry2'],
+            industry3=r['industry3'],
+            teams=[t for t in r['teams'] if t],
+            managers=[manager_name]
+        ))
+    
+    return customers
 
 
 @router.get("/customers/{customer_name}", response_model=Customer)
-async def get_customer_detail(customer_name: str):
+def get_customer_detail(customer_name: str):
     """获取客户详情"""
     cypher = """
-        MATCH (c:Customer {name: $customer_name})
-        OPTIONAL MATCH (c)<-[:RESPONSIBLE_FOR]-(m:Manager)
-        OPTIONAL MATCH (c)-[:SERVED_BY]->(s:ServicePoint)
-        OPTIONAL MATCH (c)-[:BELONGS_TO]->(i:Industry)
-        RETURN c.name as name,
-               c.level as level,
-               c.revenue as revenue,
-               c.industry_detail as industry_detail,
-               c.business_scenario as business_scenario,
-               collect(DISTINCT m.name) as managers,
-               collect(DISTINCT s.name)[0] as service_point
+    MATCH (c:Customer {name: $name})
+    OPTIONAL MATCH (c)-[:IN_INDUSTRY]->(i:Industry)
+    OPTIONAL MATCH (c)-[:ASSIGNED_TO]->(m:Manager)
+    OPTIONAL MATCH (c)-[:BELONGS_TO]->(t:Team)
+    RETURN 
+        c.name as name,
+        c.revenue as revenue,
+        c.level as level,
+        c.industry2 as industry2,
+        c.industry3 as industry3,
+        collect(DISTINCT m.name) as managers,
+        collect(DISTINCT t.name) as teams
     """
-    result = get_neo4j_result(cypher, {"customer_name": customer_name})
+    result = get_neo4j_result(cypher, {"name": customer_name})
+    
     if not result:
-        raise HTTPException(status_code=404, detail="客户不存在")
-    return Customer(**result[0])
+        raise HTTPException(status_code=404, detail="Customer not found")
+    
+    r = result[0]
+    return Customer(
+        name=r['name'],
+        revenue=round(r['revenue'] or 0, 2),
+        level=r['level'] or '普通',
+        industry2=r['industry2'],
+        industry3=r['industry3'],
+        managers=[m for m in r['managers'] if m],
+        teams=[t for t in r['teams'] if t]
+    )
 
 
-@router.get("/top-customers", response_model=List[Customer])
-async def get_top_customers(limit: int = 20):
-    """获取 Top 客户"""
+@router.get("/teams", response_model=List[dict])
+def list_teams():
+    """获取所有团队列表"""
     cypher = """
-        MATCH (c:Customer)
-        OPTIONAL MATCH (c)<-[:RESPONSIBLE_FOR]-(m:Manager)
-        OPTIONAL MATCH (c)-[:SERVED_BY]->(s:ServicePoint)
-        WITH c, m, s
-        ORDER BY c.revenue DESC
-        LIMIT $limit
-        RETURN c.name as name,
-               c.level as level,
-               c.revenue as revenue,
-               c.industry_detail as industry_detail,
-               c.business_scenario as business_scenario,
-               collect(DISTINCT m.name) as managers,
-               collect(DISTINCT s.name)[0] as service_point
+    MATCH (t:Team)
+    OPTIONAL MATCH (t)<-[:BELONGS_TO]-(c:Customer)
+    RETURN 
+        t.name as name,
+        count(DISTINCT c) as customer_count,
+        sum(c.revenue) as revenue
+    ORDER BY revenue DESC
     """
-    results = get_neo4j_result(cypher, {"limit": limit})
-    return [Customer(**r) for r in results]
-
-
-@router.get("/top-managers", response_model=List[Manager])
-async def get_top_managers(limit: int = 20):
-    """获取 Top 经理"""
-    cypher = """
-        MATCH (m:Manager)
-        OPTIONAL MATCH (m)-[:MEMBER_OF]->(t:Team)
-        WITH m, t
-        ORDER BY m.revenue DESC
-        LIMIT $limit
-        RETURN m.name as name,
-               m.code as code,
-               m.revenue as revenue,
-               m.customer_count as customer_count,
-               collect(DISTINCT t.name) as teams
-    """
-    results = get_neo4j_result(cypher, {"limit": limit})
-    return [Manager(**r) for r in results]
+    result = get_neo4j_result(cypher)
+    
+    teams = []
+    for r in result:
+        teams.append({
+            "name": r['name'],
+            "customer_count": r['customer_count'] or 0,
+            "revenue": round(r['revenue'] or 0, 2)
+        })
+    
+    return teams
