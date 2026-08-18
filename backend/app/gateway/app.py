@@ -33,6 +33,7 @@ from app.gateway.routers import (
     runs,
     scheduled_tasks,
     skills,
+    station_profit_loss,
     suggestions,
     thread_runs,
     threads,
@@ -583,6 +584,9 @@ This gateway provides runtime endpoints for agent runs plus custom endpoints for
 
     # Knowledge Graph API is mounted at /api/knowledge-graph
     app.include_router(knowledge_graph.router)
+
+    # Station Profit Loss API is mounted at /api/station-profit-loss
+    app.include_router(station_profit_loss.router)
 
     # Artifacts API is mounted at /api/threads/{thread_id}/artifacts
     app.include_router(artifacts.router)
