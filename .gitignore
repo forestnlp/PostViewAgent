@@ -52,3 +52,10 @@ htmlcov/
 dist/
 build/
 *.egg-info/
+
+# Python 缓存
+__pycache__/
+*.pyc
+
+# 向量数据库（生成物，可重建）
+data/chroma/
