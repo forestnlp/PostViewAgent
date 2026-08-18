@@ -27,6 +27,7 @@ from app.gateway.routers import (
     input_polish,
     integrations,
     knowledge_graph,
+    knowledge_search,
     mcp,
     memory,
     models,
@@ -584,6 +585,9 @@ This gateway provides runtime endpoints for agent runs plus custom endpoints for
 
     # Knowledge Graph API is mounted at /api/knowledge-graph
     app.include_router(knowledge_graph.router)
+
+    # Knowledge Search API is mounted at /api/knowledge-search
+    app.include_router(knowledge_search.router)
 
     # Station Profit Loss API is mounted at /api/station-profit-loss
     app.include_router(station_profit_loss.router)

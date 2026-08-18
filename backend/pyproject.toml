@@ -24,6 +24,7 @@ dependencies = [
     "e2b-code-interpreter>=2.8.1",
     "langchain-ollama>=1.1.0",
     "neo4j>=6.0.0",
+    "chromadb>=1.5.9",
 ]
 
 [project.optional-dependencies]
